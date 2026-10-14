@@ -264,8 +264,6 @@ function draw(){
   ctx.moveTo(px(F.toe[0]+sTop*F.d[0]), pz(F.toe[1]+sTop*F.d[1])); ctx.lineTo(px(F.toe[0]), pz(F.toe[1])); ctx.stroke();
   ctx.strokeStyle = getCss("--floor"); ctx.beginPath();
   ctx.moveTo(px(G.floor_x0), pz(G.floor_z)); ctx.lineTo(px(G.floor_x0+(G.floor_n-1)*G.dx), pz(G.floor_z)); ctx.stroke();
-  // pivot
-  ctx.fillStyle = getCss("--steel"); ctx.beginPath(); ctx.arc(px(G.pivot[0]), pz(G.pivot[1]), 6, 0, 7); ctx.fill();
   // sand particles
   ctx.fillStyle = getCss("--sand"); const r = Math.max(1.5, 0.5*G.dx*SC);
   for(let i=0;i<NCOL;i++) for(let j=0;j<rows[i];j++){
