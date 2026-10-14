@@ -10,8 +10,9 @@
   :root{
     --ink:#1d1d1f; --muted:#6e6e73; --line:#d2d2d7; --hair:#f0f0f2;
     --bg:#fbfbfd; --panel:#fff; --fill:#f5f5f7; --accent:#0071e3;
-    --sand:#c9a08a; --sand-dk:#9c7258; --steel:#43403b; --floor:#8a8985;
+    --sand:#c9a08a; --steel:#43403b; --floor:#8a8985;
     --pred:#2a78d6; --band:rgba(42,120,214,.16); --grid:#ececf0; --warn:#a3231b;
+    --target:#eb6834; --target-fill:rgba(235,104,52,.16);
   }
   *{box-sizing:border-box}
   html{-webkit-font-smoothing:antialiased}
@@ -19,42 +20,54 @@
        font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
   .page{max-width:1180px;margin:0 auto;padding:44px 20px 80px}
   h1{font-size:36px;line-height:1.1;margin:0 0 10px;font-weight:600;letter-spacing:-.02em}
-  .sub{color:var(--muted);font-size:17px;margin:0 0 26px;max-width:860px}
-  .sub a{color:var(--accent);text-decoration:none}
+  .sub{color:var(--muted);font-size:17px;margin:0 0 22px;max-width:880px}
   .card{background:var(--panel);border-radius:16px;
         box-shadow:0 1px 2px rgba(0,0,0,.05),0 10px 30px rgba(0,0,0,.05)}
-  .layout{display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start}
+  .layout{display:grid;grid-template-columns:1fr 310px;gap:20px;align-items:start}
   @media (max-width:900px){.layout{grid-template-columns:1fr}}
-  .stage{padding:14px 14px 8px;position:relative}
+  .stage{padding:10px 10px 8px;position:relative}
   canvas{width:100%;display:block;touch-action:none;cursor:crosshair;border-radius:10px}
-  .hint{color:var(--muted);font-size:13px;margin:8px 4px 4px}
-  .pad{padding:20px 20px}
-  h2{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:0 0 14px;font-weight:600}
-  .row{margin-bottom:18px}
+  .hint{color:var(--muted);font-size:13px;margin:6px 4px 2px}
+  .pad{padding:18px 18px}
+  h2{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:0 0 12px;font-weight:600}
+  .row{margin-bottom:16px}
   label.lab{display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px}
   label.lab b{font-variant-numeric:tabular-nums;font-weight:600}
+  label.chk{display:flex;gap:8px;align-items:center;font-size:14px;margin-top:6px}
   input[type=range]{width:100%}
   .btns{display:flex;flex-wrap:wrap;gap:6px}
   button{font:inherit;font-size:13px;border:1px solid var(--line);background:#fff;color:var(--ink);
          border-radius:980px;padding:6px 12px;cursor:pointer}
   button:hover{background:var(--fill)}
   button.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
-  .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .stat{background:var(--fill);border-radius:10px;padding:9px 11px}
+  button.go{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600;padding:8px 18px}
+  button:disabled{opacity:.5;cursor:default}
+  select{font:inherit;font-size:13px;border:1px solid var(--line);border-radius:980px;padding:5px 10px;background:#fff}
+  .modes{display:inline-flex;gap:2px;margin:0 0 16px;padding:3px;background:var(--fill);border-radius:980px}
+  .modes button{border:0;border-radius:980px;padding:8px 20px;font-size:15px;background:transparent}
+  .modes button.active{background:#fff;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.10)}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .stat{background:var(--fill);border-radius:10px;padding:8px 10px}
   .stat .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
-  .stat .v{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+  .stat .v{font-size:19px;font-weight:600;font-variant-numeric:tabular-nums}
   .stat .u{font-size:12px;color:var(--muted);font-weight:400}
   .warn{color:var(--warn);font-size:13px;margin:10px 0 0;min-height:1em}
-  .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--muted);margin:6px 4px 0}
+  .note{color:var(--muted);font-size:13px;margin:8px 0 0}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--muted);margin:4px 4px 0}
   .sw{display:inline-block;width:14px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
   .banner{background:#fff4e5;border:1px solid #f3d19e;color:#6b4a12;border-radius:12px;padding:10px 14px;
-          font-size:14px;margin:0 0 18px}
+          font-size:14px;margin:0 0 16px}
   .readout{position:absolute;pointer-events:none;background:rgba(29,29,31,.88);color:#fff;font-size:12px;
            padding:5px 8px;border-radius:6px;white-space:nowrap;font-variant-numeric:tabular-nums}
-  .readout[hidden]{display:none}
-  .prose{max-width:860px;margin-top:34px;font-size:15px;color:#333}
+  .sols{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+  .sol{border:1px solid var(--line);border-radius:10px;padding:7px 10px;font-size:13px;cursor:pointer;
+       font-variant-numeric:tabular-nums;background:#fff;text-align:left}
+  .sol.sel{border-color:var(--accent);box-shadow:0 0 0 2px rgba(0,113,227,.15)}
+  .sol b{font-size:14px}
+  .bar{height:4px;background:var(--fill);border-radius:2px;overflow:hidden;margin-top:8px}
+  .bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .1s}
+  .prose{max-width:880px;margin-top:34px;font-size:15px;color:#333}
   .prose h3{font-size:18px;margin:26px 0 8px}
-  .prose code{background:var(--fill);padding:1px 5px;border-radius:4px;font-size:13px}
   table{border-collapse:collapse;font-size:14px;margin:8px 0}
   td,th{border-bottom:1px solid var(--hair);padding:5px 10px;text-align:left}
   th{color:var(--muted);font-weight:600}
@@ -64,26 +77,27 @@
 <body>
 <div class="page">
   <h1>Draw a sand slide</h1>
-  <p class="sub">Set the flume angle, draw a sand mass on the slope, and a neural-network surrogate trained on
-  <span id="ntrain">thousands of</span> LS-DYNA SPH simulations predicts where it comes to rest &mdash; instantly, in your browser.
-  The material is the calibrated <i>&mu;(I)</i> + power-law Perzyna rheology of the dry-sand flume study.</p>
+  <p class="sub"><b>Forward:</b> set the flume angle and draw a sand mass on the slope &mdash; see where it comes to rest.
+  <b>Inverse:</b> draw a deposit &mdash; find the slope and sand block that would leave it.
+  Both run a neural-network surrogate of <span id="ntrain">many</span> LS-DYNA SPH simulations in your browser,
+  using the calibrated <i>&mu;(I)</i> + power-law Perzyna rheology of the dry-sand flume study.</p>
 
   <div class="banner" id="banner" hidden></div>
+  <div class="modes" role="tablist">
+    <button id="m_fwd" class="active" role="tab">Forward: shape &rarr; deposit</button>
+    <button id="m_inv" role="tab">Inverse: deposit &rarr; shape</button>
+  </div>
+
   <div class="layout">
     <div class="card stage">
-      <canvas id="cv" width="1600" height="1000" aria-label="Flume drawing area"></canvas>
+      <canvas id="cv" width="1600" height="900" aria-label="Flume drawing area"></canvas>
       <div id="readout" class="readout" hidden></div>
-      <div class="legend">
-        <span><span class="sw" style="background:var(--sand)"></span>your sand (initial, 1&nbsp;cm SPH particles)</span>
-        <span><span class="sw" style="background:var(--pred)"></span>predicted deposit</span>
-        <span><span class="sw" style="background:var(--band)"></span>ensemble spread</span>
-        <span><span class="sw" style="background:var(--steel)"></span>slope &amp; floor (fixed)</span>
-      </div>
-      <p class="hint">Drag on the slope to paint the sand&rsquo;s top surface (it fills down to the slope).
-      Hold <b>Shift</b> or use the eraser to remove. Hover the deposit to read its height.</p>
+      <div class="legend" id="legend"></div>
+      <p class="hint" id="hint"></p>
     </div>
 
-    <div class="card pad">
+    <!-- forward controls -->
+    <div class="card pad" id="p_fwd">
       <h2>Flume</h2>
       <div class="row">
         <label class="lab" for="ang">Slope angle <b><span id="angv">45.0</span>&deg;</b></label>
@@ -96,7 +110,7 @@
         <button data-preset="triangle">Triangle</button>
         <button data-preset="mound">Mound</button>
         <button data-preset="big">Big block</button>
-        <button id="erase">Eraser: off</button>
+        <button class="erase">Eraser: off</button>
         <button id="clear">Clear</button>
       </div>
       <h2>Prediction</h2>
@@ -110,6 +124,33 @@
       </div>
       <p class="warn" id="warn"></p>
     </div>
+
+    <!-- inverse controls -->
+    <div class="card pad" id="p_inv" hidden>
+      <h2>Target deposit</h2>
+      <div class="row btns">
+        <select id="expsel" aria-label="Load an experimental deposit">
+          <option value="">Load an experiment&hellip;</option>
+        </select>
+        <button id="fromfwd">Use forward result</button>
+        <button class="erase">Eraser: off</button>
+        <button id="tclear">Clear</button>
+      </div>
+      <h2>Slope angle</h2>
+      <div class="row">
+        <label class="lab" for="ang2">Angle <b><span id="angv2">45.0</span>&deg;</b></label>
+        <input id="ang2" type="range" min="30" max="60" step="0.5" value="45">
+        <label class="chk"><input type="checkbox" id="lock"> Angle is known &mdash; keep it fixed</label>
+      </div>
+      <div class="row">
+        <button class="go" id="solve">Find the source</button>
+        <div class="bar"><i id="prog"></i></div>
+        <p class="note" id="invnote">Searches the slope angle and a rectangular sand block (position, length, thickness) whose predicted deposit best matches the target.</p>
+      </div>
+      <h2>Candidate sources</h2>
+      <div class="sols" id="sols"><div class="note">Draw or load a target, then press <b>Find the source</b>.</div></div>
+      <p class="note" id="truth"></p>
+    </div>
   </div>
 
   <div class="prose">
@@ -118,20 +159,26 @@
     released at rest on a rigid slope that pivots about a fixed point above a horizontal floor.
     Each LS-DYNA run solves the release with SPH until the mass settles; the page predicts the final
     deposit surface, drawn as height above the slope or floor beneath it.</p>
+    <h3>Inverse mode</h3>
+    <p>The inverse search runs the same forward network a few thousand times: a space-filling scan of slope angle and
+    block front position, length and thickness, then a Nelder&ndash;Mead refinement from the best few starts. The misfit is the
+    RMS height difference over the columns where either the target or the prediction has sand, inside the observation
+    window (for the experiments, the part of the floor the camera saw). Different sources can leave nearly the same
+    deposit &mdash; a steeper slope with less sand, a gentler one with more &mdash; so the page lists distinct candidates
+    rather than a single answer. Fixing the angle when it is known removes most of that ambiguity.</p>
     <h3>Training data</h3>
     <p id="trainfacts">Loading&hellip;</p>
     <h3>How well it works</h3>
-    <p>Scored on 150 random shapes generated with a different seed and never used for training or model selection:</p>
+    <p>Scored on random shapes generated with a different seed and never used for training or model selection:</p>
     <table id="skilltab"></table>
     <p>The light-blue band is the spread of the five ensemble members &mdash; their disagreement, not a
-    calibrated probability. It widens where the shape is unlike anything in the training set.
-    Outside the trained ranges (slope 30&ndash;60&deg;, 100&ndash;3000 particles, thickness up to
+    calibrated probability. Outside the trained ranges (slope 30&ndash;60&deg;, 100&ndash;3000 particles, thickness up to
     36&nbsp;cm, front between 0.8 and 2.3&nbsp;m up the slope) the prediction is an extrapolation and the page says so.</p>
     <h3>Limits worth knowing</h3>
     <p>Only the final deposit is predicted, not the flow. The underlying model was calibrated against one
     block size at seven angles; other sizes and shapes are model predictions, not experimentally validated.
     Below about 35&deg; the calibrated rheology keeps creeping slowly after the main flow stops, so the
-    deposit shape there depends on when the simulation ends (the schedule used is in the repository).</p>
+    deposit shape there depends on when the simulation ends.</p>
   </div>
   <div id="selftest"></div>
 </div>
@@ -139,21 +186,36 @@
 <script>
 "use strict";
 const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
-const W = cv.width, H = cv.height;
-let M = null, layers = [];          // model header + unpacked weights
-let theta = 45;
-let G = null;                       // geometry constants from the model header
-// the shape: column heights (particle rows) on a 1 cm lattice in ramp-frame s
-const S0 = -3.40, NCOL = 336;       // columns cover s in [S0, S0 + (NCOL-1)*0.01] = [-3.40, -0.05]
+let W = cv.width, H = cv.height;
+let M = null, layers = [], G = null;
+let mode = "fwd", theta = 45;
+// forward shape: particle rows per 1 cm column in ramp-frame s
+const S0 = -3.40, NCOL = 336;
 const rows = new Int16Array(NCOL);
 let erasing = false, last = null, pred = null;
+// inverse state
+let tz = null, win = null, lastT = null, sols = [], solSel = -1, truthInfo = null, solving = false;
 
-// ---------- world view
-const VIEW = {x0:-3.15, x1:2.05, z0:-0.12, z1:3.10};
-const PADL = 70, PADB = 78, PADT = 16, PADR = 16;
-let SC = 1;
+// ---------- view: fitted to the flume at the current angle
+const PADL = 64, PADB = 70, PADT = 14, PADR = 14;
+let VIEW = {x0:-3, x1:2, z0:-0.1, z1:3}, SC = 1;
 function fitView(){
-  SC = Math.min((W-PADL-PADR)/(VIEW.x1-VIEW.x0), (H-PADT-PADB)/(VIEW.z1-VIEW.z0));
+  const F = frame(theta);
+  let sTop = -2.75; const fc = firstCol(); if(mode==="fwd" && fc>=0) sTop = Math.min(sTop, colS(fc)-0.05);
+  if(mode==="inv" && solSel>=0) sTop = Math.min(sTop, sols[solSel].sF - sols[solSel].L - 0.05);
+  const pts = [[F.toe[0], F.toe[1]], [F.toe[0]+sTop*F.d[0], F.toe[1]+sTop*F.d[1]],
+               [F.toe[0]+sTop*F.d[0]+0.30*F.n[0], F.toe[1]+sTop*F.d[1]+0.30*F.n[1]], [1.35, G.floor_z]];
+  let x0 = Math.min(...pts.map(p=>p[0])), x1 = Math.max(...pts.map(p=>p[0]));
+  let z0 = G.floor_z - 0.06, z1 = Math.max(...pts.map(p=>p[1])) + 0.05;
+  x0 -= 0.05; x1 += 0.05;
+  const cw = W - PADL - PADR;
+  const want = Math.round(cw*(z1-z0)/(x1-x0)) + PADT + PADB;
+  const h = Math.max(560, Math.min(1000, want));
+  if(h !== H){ cv.height = H = h; }
+  SC = Math.min(cw/(x1-x0), (H-PADT-PADB)/(z1-z0));
+  const cx = (x0+x1)/2, cz = (z0+z1)/2;
+  VIEW = {x0: cx - cw/SC/2, x1: cx + cw/SC/2, z0: z0, z1: z0 + (H-PADT-PADB)/SC};
+  if(VIEW.z1 > z1 + 0.02){ /* extra height: keep floor at bottom */ }
 }
 const px = x => PADL + (x-VIEW.x0)*SC;
 const pz = z => H - PADB - (z-VIEW.z0)*SC;
@@ -168,8 +230,10 @@ function frame(th){
 }
 function substrate(x, F){ return x < F.toe[0] ? F.toe[1] + (F.toe[0]-x)*F.tan : G.floor_z; }
 const colS = i => S0 + i*G.dx;
+function firstCol(){ for(let i=0;i<NCOL;i++) if(rows[i]) return i; return -1; }
+function lastCol(){ for(let i=NCOL-1;i>=0;i--) if(rows[i]) return i; return -1; }
 
-// ---------- presets (in rows / columns)
+// ---------- presets
 function setBlock(sBack, heights){
   rows.fill(0);
   const i0 = Math.round((sBack - S0)/G.dx);
@@ -207,12 +271,17 @@ function forward(net, x){
   return a;
 }
 function inputProfile(){
-  // mean thickness per 5 cm s-bin (collect_shapes.input_profile)
   const E = M.s_edges, nb = E.length-1, out = new Float64Array(nb);
   for(let i=0;i<NCOL;i++){ if(!rows[i]) continue;
     const s = colS(i), lo = s-G.dx/2, hi = s+G.dx/2;
     for(let k=0;k<nb;k++){ const ov = Math.min(hi,E[k+1]) - Math.max(lo,E[k]);
       if(ov>0) out[k] += rows[i]*G.dx*ov/(E[k+1]-E[k]); } }
+  return out;
+}
+function blockProfile(sF, L, T){
+  // continuous rectangular block occupying s in [sF-L, sF] with thickness T
+  const E = M.s_edges, nb = E.length-1, out = new Float64Array(nb), lo = sF-L, hi = sF;
+  for(let k=0;k<nb;k++){ const ov = Math.min(hi,E[k+1]) - Math.max(lo,E[k]); if(ov>0) out[k] = T*ov/(E[k+1]-E[k]); }
   return out;
 }
 function predictFrom(th, xin){
@@ -232,45 +301,41 @@ function predictFrom(th, xin){
 }
 
 // ---------- drawing
-function draw(){
-  const F = frame(theta);
-  ctx.clearRect(0,0,W,H); ctx.fillStyle = "#fff"; ctx.fillRect(0,0,W,H);
-  // grid + axes
-  ctx.strokeStyle = getCss("--grid"); ctx.lineWidth = 1; ctx.font = "26px system-ui, sans-serif";
-  ctx.fillStyle = getCss("--muted"); ctx.textAlign = "center";
-  for(let x=-3; x<=2.001; x+=0.5){ ctx.beginPath(); ctx.moveTo(px(x),pz(VIEW.z0)); ctx.lineTo(px(x),pz(VIEW.z1)); ctx.stroke();
-    ctx.fillText(x.toFixed(1), px(x), H-PADB+28); }
+let cssCache = {}; function css(v){ return cssCache[v] || (cssCache[v] = getComputedStyle(document.documentElement).getPropertyValue(v).trim()); }
+function axes(){
+  ctx.fillStyle = "#fff"; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle = css("--grid"); ctx.lineWidth = 1; ctx.font = "26px system-ui, sans-serif"; ctx.fillStyle = css("--muted");
+  const step = (VIEW.x1-VIEW.x0) > 3.2 ? 0.5 : 0.25;
+  ctx.textAlign = "center";
+  for(let x=Math.ceil(VIEW.x0/step)*step; x<=VIEW.x1+1e-9; x+=step){
+    ctx.beginPath(); ctx.moveTo(px(x),PADT); ctx.lineTo(px(x),pz(VIEW.z0)); ctx.stroke();
+    ctx.fillText(x.toFixed(step<0.5?2:1), px(x), H-PADB+30); }
   ctx.textAlign = "right";
-  for(let z=0; z<=3.001; z+=0.5){ ctx.beginPath(); ctx.moveTo(px(VIEW.x0),pz(z)); ctx.lineTo(px(VIEW.x1),pz(z)); ctx.stroke();
-    ctx.fillText(z.toFixed(1), PADL-10, pz(z)+7); }
-  ctx.textAlign = "center"; ctx.fillText("x [m]", px((VIEW.x0+VIEW.x1)/2), H-PADB+64);
-  ctx.save(); ctx.translate(22, pz(1.6)); ctx.rotate(-Math.PI/2); ctx.textAlign="center"; ctx.fillText("z [m]",0,0); ctx.restore();
-
-  // predicted deposit + band
-  if(pred){
-    const xs = M.x_out, hmin = M.h_min;
-    ctx.fillStyle = getCss("--band");
-    polyBand(xs, j => substrate(xs[j],F)+pred.lo[j], j => substrate(xs[j],F)+pred.hi[j], j => pred.hi[j] > hmin);
-    ctx.fillStyle = "rgba(42,120,214,.55)";
-    polyBand(xs, j => substrate(xs[j],F), j => substrate(xs[j],F)+pred.mean[j], j => pred.mean[j] > hmin);
-    ctx.strokeStyle = getCss("--pred"); ctx.lineWidth = 3; ctx.beginPath(); let on=false;
-    for(let j=0;j<xs.length;j++){ if(pred.mean[j] > hmin){ const X=px(xs[j]), Y=pz(substrate(xs[j],F)+pred.mean[j]);
-      on ? ctx.lineTo(X,Y) : ctx.moveTo(X,Y); on=true; } else on=false; }
-    ctx.stroke();
-  }
-  // ramp + floor
-  const sTop = Math.min(-G.ramp_len_base, firstCol() >= 0 ? colS(firstCol()) : 0);
-  ctx.strokeStyle = getCss("--steel"); ctx.lineWidth = 5; ctx.lineCap = "round"; ctx.beginPath();
+  for(let z=0; z<=VIEW.z1+1e-9; z+=step){ ctx.beginPath(); ctx.moveTo(PADL,pz(z)); ctx.lineTo(W-PADR,pz(z)); ctx.stroke();
+    ctx.fillText(z.toFixed(step<0.5?2:1), PADL-8, pz(z)+8); }
+  ctx.textAlign = "center"; ctx.fillText("x [m]", (PADL+W-PADR)/2, H-PADB+62);
+  ctx.save(); ctx.translate(20, (PADT+H-PADB)/2); ctx.rotate(-Math.PI/2); ctx.fillText("z [m]",0,0); ctx.restore();
+}
+function flume(F, sTop){
+  ctx.strokeStyle = css("--steel"); ctx.lineWidth = 5; ctx.lineCap = "round"; ctx.beginPath();
   ctx.moveTo(px(F.toe[0]+sTop*F.d[0]), pz(F.toe[1]+sTop*F.d[1])); ctx.lineTo(px(F.toe[0]), pz(F.toe[1])); ctx.stroke();
-  ctx.strokeStyle = getCss("--floor"); ctx.beginPath();
+  ctx.strokeStyle = css("--floor"); ctx.beginPath();
   ctx.moveTo(px(G.floor_x0), pz(G.floor_z)); ctx.lineTo(px(G.floor_x0+(G.floor_n-1)*G.dx), pz(G.floor_z)); ctx.stroke();
-  // sand particles
-  ctx.fillStyle = getCss("--sand"); const r = Math.max(1.5, 0.5*G.dx*SC);
-  for(let i=0;i<NCOL;i++) for(let j=0;j<rows[i];j++){
-    const s = colS(i), n = G.sand_n_bottom + j*G.dx;
-    const X = F.toe[0]+s*F.d[0]+n*F.n[0], Z = F.toe[1]+s*F.d[1]+n*F.n[1];
-    ctx.fillRect(px(X)-r, pz(Z)-r, 2*r, 2*r);
-  }
+}
+function particles(F, colsArr, sBack){
+  ctx.fillStyle = css("--sand"); const r = Math.max(1.5, 0.5*G.dx*SC);
+  colsArr.forEach((nr, i) => { for(let j=0;j<nr;j++){
+    const s = sBack + i*G.dx, n = G.sand_n_bottom + j*G.dx;
+    ctx.fillRect(px(F.toe[0]+s*F.d[0]+n*F.n[0])-r, pz(F.toe[1]+s*F.d[1]+n*F.n[1])-r, 2*r, 2*r); } });
+}
+function deposit(P, F){
+  const xs = M.x_out, hmin = M.h_min;
+  ctx.fillStyle = css("--band");
+  polyBand(xs, j => substrate(xs[j],F)+P.lo[j], j => substrate(xs[j],F)+P.hi[j], j => P.hi[j] > hmin);
+  ctx.fillStyle = "rgba(42,120,214,.55)";
+  polyBand(xs, j => substrate(xs[j],F), j => substrate(xs[j],F)+P.mean[j], j => P.mean[j] > hmin);
+  ctx.strokeStyle = css("--pred"); ctx.lineWidth = 3; ctx.setLineDash([]);
+  strokeRuns(xs, j => P.mean[j] > hmin, j => substrate(xs[j],F)+P.mean[j]);
 }
 function polyBand(xs, lo, hi, on){
   let j=0;
@@ -283,12 +348,45 @@ function polyBand(xs, lo, hi, on){
     ctx.closePath(); ctx.fill(); j=k+1;
   }
 }
-let cssCache = {}; function getCss(v){ return cssCache[v] || (cssCache[v] = getComputedStyle(document.documentElement).getPropertyValue(v).trim()); }
-function firstCol(){ for(let i=0;i<NCOL;i++) if(rows[i]) return i; return -1; }
-function lastCol(){ for(let i=NCOL-1;i>=0;i--) if(rows[i]) return i; return -1; }
+function strokeRuns(xs, on, zf){
+  ctx.beginPath(); let started=false;
+  for(let j=0;j<xs.length;j++){ if(on(j)){ const X=px(xs[j]), Y=pz(zf(j)); started ? ctx.lineTo(X,Y) : ctx.moveTo(X,Y); started=true; } else started=false; }
+  ctx.stroke();
+}
+function draw(){
+  fitView(); axes();
+  const F = frame(theta);
+  if(mode === "fwd"){
+    if(pred) deposit(pred, F);
+    const fc = firstCol();
+    flume(F, Math.min(-(G.ramp_len_base), fc>=0 ? colS(fc) : 0));
+    const lc = lastCol(); if(fc>=0) particles(F, Array.from(rows.slice(fc, lc+1)), colS(fc));
+  } else {
+    const s = solSel>=0 ? sols[solSel] : null;
+    if(s) deposit(s.P, F);
+    flume(F, Math.min(-(G.ramp_len_base), s ? s.sF - s.L : 0));
+    if(s){ const c = blockCols(s); particles(F, Array(c.cols).fill(c.rows), s.sF - (c.cols-1)*G.dx); }
+    drawTarget(F);
+  }
+}
+function drawTarget(F){
+  if(!tz) return;
+  const xs = M.x_out, on = j => !isNaN(tz[j]) && tz[j] > substrate(xs[j],F) + 0.003;
+  ctx.fillStyle = css("--target-fill");
+  polyBand(xs, j => substrate(xs[j],F), j => tz[j], on);
+  ctx.strokeStyle = css("--target"); ctx.lineWidth = 3.5; ctx.setLineDash([14,9]);
+  strokeRuns(xs, on, j => tz[j]); ctx.setLineDash([]);
+  if(win){
+    ctx.strokeStyle = css("--muted"); ctx.lineWidth = 2; ctx.setLineDash([4,8]);
+    [win[0], win[1]].forEach(x => { ctx.beginPath(); ctx.moveTo(px(x), PADT); ctx.lineTo(px(x), pz(VIEW.z0)); ctx.stroke(); });
+    ctx.setLineDash([]); ctx.fillStyle = css("--muted"); ctx.textAlign = "left"; ctx.font = "22px system-ui, sans-serif";
+    ctx.fillText("camera window", px(win[0])+8, PADT+26);
+  }
+}
 
-// ---------- stats + range checks
-function update(){
+// ---------- forward stats
+const set = (id, h) => document.getElementById(id).innerHTML = h;
+function updateFwd(){
   const n = rows.reduce((a,b)=>a+b,0);
   pred = n > 0 ? predictFrom(theta, inputProfile()) : null;
   const F = frame(theta);
@@ -305,30 +403,127 @@ function update(){
     set("s_len", iF>=0 ? `${(xs[iF]-xs[iB]).toFixed(2)}<span class="u"> m</span>` : "&ndash;");
     set("s_slope", aT>0 ? `${Math.round(100*aS/aT)}<span class="u"> % of section</span>` : "&ndash;");
   } else ["s_run","s_h","s_len","s_slope"].forEach(k=>set(k,"&ndash;"));
-  // training-range warnings
   const w = [], R = M.training_range;
   if(theta < R.theta[0] || theta > R.theta[1]) w.push(`slope outside ${R.theta[0]}&ndash;${R.theta[1]}&deg;`);
   if(n && (n < R.particles[0] || n > R.particles[1])) w.push(`${n} particles (trained ${R.particles[0]}&ndash;${R.particles[1]})`);
   const mx = Math.max(...rows)*G.dx; if(mx > R.thickness_max_m+1e-9) w.push(`thickness ${(mx*100).toFixed(0)} cm &gt; ${R.thickness_max_m*100} cm`);
   const lc = lastCol(); if(lc>=0){ const sf = colS(lc); if(sf > R.s_front[1] || sf < R.s_front[0])
       w.push(`front ${(-sf).toFixed(2)} m up the slope (trained ${-R.s_front[1]}&ndash;${-R.s_front[0]} m)`); }
-  document.getElementById("warn").innerHTML = w.length ? "Extrapolating: " + w.join("; ") + "." : "";
+  set("warn", w.length ? "Extrapolating: " + w.join("; ") + "." : "");
   draw();
 }
-const set = (id, h) => document.getElementById(id).innerHTML = h;
 
-// ---------- interaction: paint the top surface in ramp coordinates
-function toRamp(ev){
-  const b = cv.getBoundingClientRect();
-  const X = (ev.clientX-b.left)*W/b.width, Y = (ev.clientY-b.top)*H/b.height;
-  const x = wx(X), z = wz(Y), F = frame(theta);
-  const dx = x-F.toe[0], dz = z-F.toe[1];
-  return {s: dx*F.d[0]+dz*F.d[1], n: dx*F.n[0]+dz*F.n[1], x, z, X, Y};
+// ---------- inverse: objective and search
+const BOUNDS = () => ({th: document.getElementById("lock").checked ? [theta, theta] : M.training_range.theta,
+                       sF: M.training_range.s_front, L: [0.10, 1.30], T: [0.02, M.training_range.thickness_max_m]});
+function decode(u, B){
+  const th = B.th[0] + u[0]*(B.th[1]-B.th[0]);
+  const sF = B.sF[0] + u[1]*(B.sF[1]-B.sF[0]);
+  const Lmax = Math.min(B.L[1], sF - G.s_min_allowed);
+  const L = B.L[0] + u[2]*(Lmax-B.L[0]);
+  const T = B.T[0] + u[3]*(B.T[1]-B.T[0]);
+  return {th, sF, L, T};
 }
-function toRampXY(x, z){
-  const F = frame(theta), dx = x-F.toe[0], dz = z-F.toe[1];
-  return {s: dx*F.d[0]+dz*F.d[1], n: dx*F.n[0]+dz*F.n[1], x, z};
+function misfit(p){
+  const P = predictFrom(p.th, blockProfile(p.sF, p.L, p.T)), F = frame(p.th), xs = M.x_out;
+  let sse = 0, n = 0;
+  for(let j=0;j<xs.length;j++){
+    if(win && (xs[j] < win[0] || xs[j] > win[1])) continue;
+    const ht = isNaN(tz[j]) ? 0 : Math.max(0, tz[j] - substrate(xs[j], F));
+    const hp = P.mean[j] > M.h_min ? P.mean[j] : 0;
+    if(ht > 0.003 || hp > 0){ sse += (hp-ht)**2; n++; }
+  }
+  // stay inside the trained particle range
+  const parts = p.L*p.T/(G.dx*G.dx), R = M.training_range.particles;
+  const pen = parts < R[0] ? (R[0]-parts)/R[0] : parts > R[1] ? (parts-R[1])/R[1] : 0;
+  return {f: (n ? Math.sqrt(sse/n) : 1) + 0.05*pen, P};
 }
+const clamp01 = u => u.map(v => Math.min(1, Math.max(0, v)));
+function halton(i, b){ let f=1, r=0; while(i>0){ f/=b; r+=f*(i%b); i=Math.floor(i/b); } return r; }
+const tick = () => new Promise(r => setTimeout(r, 0));
+async function nelderMead(fu, u0, step, iters, onIter){
+  const n = u0.length; let S = [u0.map(v=>v)];
+  for(let i=0;i<n;i++){ const u = u0.slice(); u[i] = u[i] + (u[i] > 0.5 ? -step : step); S.push(u); }
+  S = S.map(u => { const c = clamp01(u); return {u:c, f:fu(c)}; });
+  for(let it=0; it<iters; it++){
+    S.sort((a,b)=>a.f-b.f);
+    if(Math.abs(S[n].f - S[0].f) < 1e-5) break;
+    const c = new Array(n).fill(0); for(let i=0;i<n;i++) for(let k=0;k<n;k++) c[k] += S[i].u[k]/n;
+    const pt = a => { const u = clamp01(c.map((v,k)=>v + a*(S[n].u[k]-v))); return {u, f:fu(u)}; };
+    const r = pt(-1);
+    if(r.f < S[0].f){ const e = pt(-2); S[n] = e.f < r.f ? e : r; }
+    else if(r.f < S[n-1].f) S[n] = r;
+    else { const k = pt(r.f < S[n].f ? -0.5 : 0.5);
+      if(k.f < Math.min(r.f, S[n].f)) S[n] = k;
+      else for(let i=1;i<=n;i++){ const u = clamp01(S[i].u.map((v,q)=>S[0].u[q] + 0.5*(v-S[0].u[q]))); S[i] = {u, f:fu(u)}; } }
+    if(it % 8 === 0){ onIter(); await tick(); }
+  }
+  S.sort((a,b)=>a.f-b.f); return S[0];
+}
+async function solve(){
+  if(solving || !tz || !tz.some(v => !isNaN(v))) return;
+  solving = true; document.getElementById("solve").disabled = true;
+  const B = BOUNDS(), fu = u => misfit(decode(u, B)).f, prog = document.getElementById("prog");
+  const NSCAN = 384, NSTART = 6, NITER = 90;
+  let done = 0; const total = NSCAN + NSTART*NITER*1.6;
+  const bump = () => prog.style.width = Math.min(100, 100*done/total) + "%";
+  const scan = [];
+  for(let i=1;i<=NSCAN;i++){
+    const u = [halton(i,2), halton(i,3), halton(i,5), halton(i,7)];
+    scan.push({u, f: fu(u)}); done++;
+    if(i % 24 === 0){ bump(); await tick(); }
+  }
+  scan.sort((a,b)=>a.f-b.f);
+  const starts = [];
+  for(const c of scan){ if(starts.every(s => Math.hypot(...s.u.map((v,k)=>v-c.u[k])) > 0.25)) starts.push(c); if(starts.length>=NSTART) break; }
+  const found = [];
+  for(const s of starts){
+    const fuc = u => { done++; return fu(u); };
+    const best = await nelderMead(fuc, s.u, 0.08, NITER, bump);
+    const p = decode(best.u, B); const r = misfit(p); found.push({...p, f: r.f, P: r.P});
+  }
+  found.sort((a,b)=>a.f-b.f);
+  sols = [];
+  for(const s of found){ if(sols.every(t => Math.abs(t.th-s.th) > 2 || Math.abs(Math.log((t.L*t.T)/(s.L*s.T))) > 0.2)) sols.push(s); if(sols.length>=4) break; }
+  prog.style.width = "100%"; solving = false; document.getElementById("solve").disabled = false;
+  pickSol(0);
+}
+function blockCols(s){ return {cols: Math.max(1, Math.round(s.L/G.dx)), rows: Math.max(1, Math.round(s.T/G.dx))}; }
+function pickSol(i){
+  solSel = i; const s = sols[i];
+  if(s && !document.getElementById("lock").checked) setTheta(s.th);
+  renderSols(); draw();
+}
+function renderSols(){
+  const box = document.getElementById("sols");
+  if(!sols.length){ box.innerHTML = `<div class="note">Draw or load a target, then press <b>Find the source</b>.</div>`; return; }
+  box.innerHTML = sols.map((s,i) => { const c = blockCols(s);
+    return `<button class="sol${i===solSel?" sel":""}" data-i="${i}"><b>${i===0?"Best":"Alternative "+i}</b> &middot; misfit ${(s.f*100).toFixed(1)} cm<br>
+      slope ${s.th.toFixed(1)}&deg; &middot; block ${s.L.toFixed(2)} &times; ${s.T.toFixed(2)} m (${c.cols}&times;${c.rows} = ${c.cols*c.rows} particles, ${(c.cols*c.rows/644).toFixed(2)} V&#8320;)<br>
+      front ${(-s.sF).toFixed(2)} m up the slope</button>`; }).join("");
+  box.querySelectorAll(".sol").forEach(b => b.addEventListener("click", () => pickSol(+b.dataset.i)));
+}
+function clearSols(){ sols = []; solSel = -1; document.getElementById("prog").style.width = "0"; renderSols(); }
+function loadExperiment(a){
+  const e = M.experiments[a]; if(!e) return;
+  tz = new Float64Array(M.n_out).fill(NaN);
+  const xs = M.x_out;
+  for(let j=0;j<xs.length;j++){ const x = xs[j]; if(x < e.x[0] || x > e.x[e.x.length-1]) continue;
+    let k = 0; while(k < e.x.length-2 && e.x[k+1] < x) k++;
+    const t = (x - e.x[k])/(e.x[k+1]-e.x[k]); tz[j] = e.z[k] + t*(e.z[k+1]-e.z[k]); }
+  win = [e.x[0], e.x[e.x.length-1]];
+  const bb = G.base_block;
+  truthInfo = `Experiment: slope ${a}&deg;, block ${(bb.cols*G.dx).toFixed(2)} &times; ${(bb.rows*G.dx).toFixed(2)} m `
+            + `(${bb.cols*bb.rows} particles), front ${(-(bb.s_back+(bb.cols-1)*G.dx)).toFixed(2)} m up the slope. `
+            + `Only the floor inside the camera window was digitised.`;
+  set("truth", truthInfo); clearSols(); draw();
+}
+
+// ---------- interaction
+function toRampXY(x, z){ const F = frame(theta), dx = x-F.toe[0], dz = z-F.toe[1];
+  return {s: dx*F.d[0]+dz*F.d[1], n: dx*F.n[0]+dz*F.n[1], x, z}; }
+function toWorld(ev){ const b = cv.getBoundingClientRect();
+  return toRampXY(wx((ev.clientX-b.left)*W/b.width), wz((ev.clientY-b.top)*H/b.height)); }
 function paint(p){
   const remove = erasing || p.shift;
   const i1 = Math.round((p.s-S0)/G.dx);
@@ -341,36 +536,89 @@ function paint(p){
     else rows[i] = Math.min(60, r); }
   last = {i:i1, r:r1};
 }
+function paintTarget(p){
+  if(!tz){ tz = new Float64Array(M.n_out).fill(NaN); }
+  if(win){ win = null; truthInfo = null; set("truth", ""); }
+  const remove = erasing || p.shift, xs = M.x_out, dxo = xs[1]-xs[0], F = frame(theta);
+  const j1 = Math.round((p.x - xs[0])/dxo), z1 = p.z;
+  const j0 = lastT ? lastT.j : j1, z0 = lastT ? lastT.z : z1;
+  for(let j=Math.min(j0,j1); j<=Math.max(j0,j1); j++){ if(j<0 || j>=xs.length) continue;
+    const z = j1===j0 ? z1 : z0 + (z1-z0)*(j-j0)/(j1-j0);
+    if(remove){ if(isNaN(tz[j]) || z < tz[j] + 0.05) tz[j] = (z > substrate(xs[j],F)+0.01 && !isNaN(tz[j])) ? Math.min(tz[j], z) : NaN; }
+    else tz[j] = z > substrate(xs[j],F) + 0.01 ? z : NaN; }
+  lastT = {j:j1, z:z1};
+}
 let down = false;
-cv.addEventListener("pointerdown", ev => { down = true; last = null; cv.setPointerCapture(ev.pointerId);
-  const p = toRamp(ev); p.shift = ev.shiftKey; if(p.s <= 0 && p.n > -0.05){ paint(p); update(); } });
-cv.addEventListener("pointermove", ev => {
-  const p = toRamp(ev); p.shift = ev.shiftKey;
-  if(down){ if(p.s <= 0 && p.n > -0.05){ paint(p); update(); } hideReadout(); return; }
-  showReadout(ev, p);
-});
-cv.addEventListener("pointerup", () => { down = false; last = null; });
+cv.addEventListener("pointerdown", ev => { if(solving) return; down = true; last = null; lastT = null; cv.setPointerCapture(ev.pointerId); move(ev); });
+cv.addEventListener("pointermove", ev => { if(down) move(ev); else showReadout(ev); });
+cv.addEventListener("pointerup", () => { down = false; last = null; lastT = null; });
 cv.addEventListener("pointerleave", hideReadout);
-function showReadout(ev, p){
-  const el = document.getElementById("readout");
-  if(!pred){ el.hidden = true; return; }
-  const xs = M.x_out, j = Math.round((p.x - xs[0])/(xs[1]-xs[0]));
-  if(j<0 || j>=xs.length || pred.mean[j] <= M.h_min){ el.hidden = true; return; }
+function move(ev){
+  const p = toWorld(ev); p.shift = ev.shiftKey; hideReadout();
+  if(mode === "fwd"){ if(p.s <= 0 && p.n > -0.05){ paint(p); updateFwd(); } }
+  else { paintTarget(p); if(solSel>=0) clearSols(); draw(); }
+}
+function showReadout(ev){
+  const el = document.getElementById("readout"), p = toWorld(ev), xs = M.x_out;
+  const j = Math.round((p.x - xs[0])/(xs[1]-xs[0])), F = frame(theta);
+  const P = mode === "fwd" ? pred : (solSel>=0 ? sols[solSel].P : null);
+  const parts = [];
+  if(j>=0 && j<xs.length){
+    if(P && P.mean[j] > M.h_min) parts.push(`predicted ${(P.mean[j]*100).toFixed(1)} cm (${(P.lo[j]*100).toFixed(1)}&ndash;${(P.hi[j]*100).toFixed(1)})`);
+    if(mode==="inv" && tz && !isNaN(tz[j])) parts.push(`target ${(Math.max(0,tz[j]-substrate(xs[j],F))*100).toFixed(1)} cm`);
+  }
+  if(!parts.length){ el.hidden = true; return; }
   const b = cv.getBoundingClientRect();
-  el.innerHTML = `x = ${xs[j].toFixed(2)} m &middot; deposit ${(pred.mean[j]*100).toFixed(1)} cm `
-               + `(${(pred.lo[j]*100).toFixed(1)}&ndash;${(pred.hi[j]*100).toFixed(1)})`;
-  el.style.left = (ev.clientX - b.left + 26) + "px"; el.style.top = (ev.clientY - b.top + 4) + "px"; el.hidden = false;
+  el.innerHTML = `x = ${xs[j].toFixed(2)} m &middot; ` + parts.join(" &middot; ");
+  el.style.left = (ev.clientX - b.left + 22) + "px"; el.style.top = (ev.clientY - b.top + 4) + "px"; el.hidden = false;
 }
 function hideReadout(){ document.getElementById("readout").hidden = true; }
 
-document.getElementById("ang").addEventListener("input", e => {
-  theta = +e.target.value; document.getElementById("angv").textContent = theta.toFixed(1); update(); });
-document.querySelectorAll("[data-preset]").forEach(btn => btn.addEventListener("click", () => {
-  PRESETS[btn.dataset.preset](); update(); }));
-document.getElementById("clear").addEventListener("click", () => { rows.fill(0); update(); });
-document.getElementById("erase").addEventListener("click", e => {
-  erasing = !erasing; e.target.textContent = "Eraser: " + (erasing ? "on" : "off");
-  e.target.classList.toggle("primary", erasing); });
+function setTheta(v){
+  theta = v;
+  document.getElementById("ang").value = v; document.getElementById("ang2").value = v;
+  set("angv", v.toFixed(1)); set("angv2", v.toFixed(1));
+}
+document.getElementById("ang").addEventListener("input", e => { setTheta(+e.target.value); updateFwd(); });
+document.getElementById("ang2").addEventListener("input", e => { setTheta(+e.target.value); if(solSel>=0) clearSols(); draw(); });
+document.querySelectorAll("[data-preset]").forEach(btn => btn.addEventListener("click", () => { PRESETS[btn.dataset.preset](); updateFwd(); }));
+document.getElementById("clear").addEventListener("click", () => { rows.fill(0); updateFwd(); });
+document.querySelectorAll(".erase").forEach(b => b.addEventListener("click", () => {
+  erasing = !erasing; document.querySelectorAll(".erase").forEach(e => { e.textContent = "Eraser: " + (erasing ? "on" : "off"); e.classList.toggle("primary", erasing); }); }));
+document.getElementById("tclear").addEventListener("click", () => { tz = null; win = null; set("truth",""); clearSols(); draw(); });
+document.getElementById("fromfwd").addEventListener("click", () => {
+  if(!pred) return; const F = frame(theta), xs = M.x_out;
+  tz = new Float64Array(M.n_out).fill(NaN); win = null;
+  for(let j=0;j<xs.length;j++) if(pred.mean[j] > M.h_min) tz[j] = substrate(xs[j],F) + pred.mean[j];
+  const n = rows.reduce((a,b)=>a+b,0), lc = lastCol();
+  set("truth", `Target is the forward prediction for your drawn shape at ${theta.toFixed(1)}&deg; (${n} particles, front ${(-colS(lc)).toFixed(2)} m up the slope).`);
+  clearSols(); draw();
+});
+document.getElementById("expsel").addEventListener("change", e => { if(e.target.value){ setTheta(+e.target.value); loadExperiment(e.target.value); } });
+document.getElementById("solve").addEventListener("click", solve);
+document.getElementById("lock").addEventListener("change", () => { if(solSel>=0) clearSols(); });
+
+function setMode(m){
+  mode = m;
+  document.getElementById("m_fwd").classList.toggle("active", m==="fwd");
+  document.getElementById("m_inv").classList.toggle("active", m==="inv");
+  document.getElementById("p_fwd").hidden = m!=="fwd"; document.getElementById("p_inv").hidden = m!=="inv";
+  set("legend", m==="fwd"
+    ? `<span><span class="sw" style="background:var(--sand)"></span>your sand (initial, 1&nbsp;cm SPH particles)</span>
+       <span><span class="sw" style="background:var(--pred)"></span>predicted deposit</span>
+       <span><span class="sw" style="background:var(--band)"></span>ensemble spread</span>
+       <span><span class="sw" style="background:var(--steel)"></span>slope &amp; floor</span>`
+    : `<span><span class="sw" style="background:var(--target)"></span>target deposit (dashed)</span>
+       <span><span class="sw" style="background:var(--sand)"></span>recovered source block</span>
+       <span><span class="sw" style="background:var(--pred)"></span>its predicted deposit</span>
+       <span><span class="sw" style="background:var(--steel)"></span>slope &amp; floor</span>`);
+  set("hint", m==="fwd"
+    ? `Drag on the slope to paint the sand&rsquo;s top surface (it fills down to the slope). Hold <b>Shift</b> or use the eraser to remove. Hover the deposit to read its height.`
+    : `Drag across the floor or slope to draw the deposit&rsquo;s top surface, or load an experiment. Hold <b>Shift</b> or use the eraser to remove.`);
+  if(m==="fwd") updateFwd(); else draw();
+}
+document.getElementById("m_fwd").addEventListener("click", () => setMode("fwd"));
+document.getElementById("m_inv").addEventListener("click", () => setMode("inv"));
 
 // ---------- facts + self-test
 function fillFacts(){
@@ -384,37 +632,48 @@ function fillFacts(){
   const rowsT = [
     ["Deposit surface error (mean over test shapes)", `${s.profile_rmse_cm.mlp_ensemble.toFixed(2)} cm`],
     ["&hellip; 90th percentile", `${s.profile_rmse_cm.mlp_ensemble_p90.toFixed(2)} cm`],
-    ["Runout front position, mean abs. error", `${s.front_mae_cm.toFixed(1)} cm (R&sup2; ${s.front_r2.toFixed(3)})`],
-    ["Maximum deposit height, mean abs. error", `${s.hmax_mae_cm.toFixed(1)} cm (R&sup2; ${s.hmax_r2.toFixed(3)})`],
+    ["Runout front position, mean abs. error", `${s.front_mae_cm.toFixed(1)} cm`],
+    ["Maximum deposit height, mean abs. error", `${s.hmax_mae_cm.toFixed(1)} cm`],
     ["Baseline: 5-nearest-neighbour lookup", `${s.profile_rmse_cm.knn5.toFixed(2)} cm`],
     ["Baseline: linear (ridge) regression", `${s.profile_rmse_cm.ridge.toFixed(2)} cm`],
   ];
-  document.getElementById("skilltab").innerHTML = "<tr><th>Held-out test</th><th></th></tr>" +
+  document.getElementById("skilltab").innerHTML = `<tr><th>Held-out test (${s.n_test} shapes)</th><th></th></tr>` +
     rowsT.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("");
+  const sel = document.getElementById("expsel");
+  Object.keys(M.experiments).forEach(a => { const o = document.createElement("option"); o.value = a; o.innerHTML = `Experiment, ${a}&deg; slope`; sel.appendChild(o); });
 }
-function selftest(){
+async function selftest(){
   let worst = 0;
   M.selftest.forEach(c => { const p = predictFrom(c.theta, c.xin).mean;
     c.pred.forEach((v,j) => worst = Math.max(worst, Math.abs(v-p[j]))); });
-  // synthetic stroke: paint a 30 cm long, 10 cm thick top surface through the pointer path
   rows.fill(0); last = null; const F = frame(theta);
   for(let k=0;k<=30;k++){ const s=-2.0-k*0.01, n=0.0237+0.095;
-    const x=F.toe[0]+s*F.d[0]+n*F.n[0], z=F.toe[1]+s*F.d[1]+n*F.n[1];
-    paint({...toRampXY(x,z), shift:false}); }
+    paint({...toRampXY(F.toe[0]+s*F.d[0]+n*F.n[0], F.toe[1]+s*F.d[1]+n*F.n[1]), shift:false}); }
   const painted = rows.reduce((a,b)=>a+b,0);
-  document.getElementById("selftest").textContent = `SELFTEST max_abs_diff_m=${worst.toExponential(3)} `
-    + (worst < 1e-4 ? "PASS" : "FAIL") + ` stroke_particles=${painted} (expect 310) ` + (painted===310 ? "PASS" : "FAIL");
+  let out = `SELFTEST max_abs_diff_m=${worst.toExponential(3)} ` + (worst < 1e-4 ? "PASS" : "FAIL")
+          + ` stroke_particles=${painted} (expect 310) ` + (painted===310 ? "PASS" : "FAIL");
+  // inverse round trip: target = forward prediction of the experiment block at 45 deg
+  PRESETS.base(); setTheta(45); updateFwd(); document.getElementById("fromfwd").click();
+  setTheta(38); await solve(); const s = sols[0], n = blockCols(s);
+  const ok = Math.abs(s.th-45) < 4 && Math.abs(n.cols*n.rows/644 - 1) < 0.3;
+  out += ` inverse th=${s.th.toFixed(1)} V=${(n.cols*n.rows/644).toFixed(2)} misfit_cm=${(s.f*100).toFixed(2)} ` + (ok ? "PASS" : "FAIL");
+  document.getElementById("selftest").textContent = out;
 }
 
 (async function(){
-  fitView();
   try { await loadModel(); }
-  catch(e){ document.getElementById("warn").textContent = "Could not load the model: " + e.message; return; }
+  catch(e){ set("warn", "Could not load the model: " + e.message); return; }
   fillFacts();
   if(M.preliminary){ const b = document.getElementById("banner"); b.hidden = false; b.innerHTML = M.preliminary; }
   PRESETS.base();
-  if(new URLSearchParams(location.search).has("selftest")){ selftest(); PRESETS.base(); }
-  update();
+  const q = new URLSearchParams(location.search);
+  if(q.get("angle")) setTheta(Math.min(65, Math.max(25, +q.get("angle"))));
+  setMode(q.get("mode") === "inv" ? "inv" : "fwd");
+  if(q.get("exp") && M.experiments[q.get("exp")]){
+    setTheta(+q.get("exp")); document.getElementById("expsel").value = q.get("exp"); loadExperiment(q.get("exp"));
+    if(q.has("solve")) await solve();
+  }
+  if(q.has("selftest")) await selftest();
 })();
 </script>
 </body>
