@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Draw a sand slide &mdash; SPH flume deposit predictor</title>
+<!-- Pure ASCII with HTML entities for every symbol, same convention as the
+     companion parameter-grid explorer (Windows tooling once mangled non-ASCII). -->
+<style>
+  :root{
+    --ink:#1d1d1f; --muted:#6e6e73; --line:#d2d2d7; --hair:#f0f0f2;
+    --bg:#fbfbfd; --panel:#fff; --fill:#f5f5f7; --accent:#0071e3;
+    --sand:#c9a08a; --sand-dk:#9c7258; --steel:#43403b; --floor:#8a8985;
+    --pred:#2a78d6; --band:rgba(42,120,214,.16); --grid:#ececf0; --warn:#a3231b;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-font-smoothing:antialiased}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .page{max-width:1180px;margin:0 auto;padding:44px 20px 80px}
+  h1{font-size:36px;line-height:1.1;margin:0 0 10px;font-weight:600;letter-spacing:-.02em}
+  .sub{color:var(--muted);font-size:17px;margin:0 0 26px;max-width:860px}
+  .sub a{color:var(--accent);text-decoration:none}
+  .card{background:var(--panel);border-radius:16px;
+        box-shadow:0 1px 2px rgba(0,0,0,.05),0 10px 30px rgba(0,0,0,.05)}
+  .layout{display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start}
+  @media (max-width:900px){.layout{grid-template-columns:1fr}}
+  .stage{padding:14px 14px 8px;position:relative}
+  canvas{width:100%;display:block;touch-action:none;cursor:crosshair;border-radius:10px}
+  .hint{color:var(--muted);font-size:13px;margin:8px 4px 4px}
+  .pad{padding:20px 20px}
+  h2{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:0 0 14px;font-weight:600}
+  .row{margin-bottom:18px}
+  label.lab{display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px}
+  label.lab b{font-variant-numeric:tabular-nums;font-weight:600}
+  input[type=range]{width:100%}
+  .btns{display:flex;flex-wrap:wrap;gap:6px}
+  button{font:inherit;font-size:13px;border:1px solid var(--line);background:#fff;color:var(--ink);
+         border-radius:980px;padding:6px 12px;cursor:pointer}
+  button:hover{background:var(--fill)}
+  button.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .stat{background:var(--fill);border-radius:10px;padding:9px 11px}
+  .stat .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .stat .v{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+  .stat .u{font-size:12px;color:var(--muted);font-weight:400}
+  .warn{color:var(--warn);font-size:13px;margin:10px 0 0;min-height:1em}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--muted);margin:6px 4px 0}
+  .sw{display:inline-block;width:14px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+  .banner{background:#fff4e5;border:1px solid #f3d19e;color:#6b4a12;border-radius:12px;padding:10px 14px;
+          font-size:14px;margin:0 0 18px}
+  .readout{position:absolute;pointer-events:none;background:rgba(29,29,31,.88);color:#fff;font-size:12px;
+           padding:5px 8px;border-radius:6px;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .readout[hidden]{display:none}
+  .prose{max-width:860px;margin-top:34px;font-size:15px;color:#333}
+  .prose h3{font-size:18px;margin:26px 0 8px}
+  .prose code{background:var(--fill);padding:1px 5px;border-radius:4px;font-size:13px}
+  table{border-collapse:collapse;font-size:14px;margin:8px 0}
+  td,th{border-bottom:1px solid var(--hair);padding:5px 10px;text-align:left}
+  th{color:var(--muted);font-weight:600}
+  #selftest{white-space:pre-wrap;font:12px monospace}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Draw a sand slide</h1>
+  <p class="sub">Set the flume angle, draw a sand mass on the slope, and a neural-network surrogate trained on
+  <span id="ntrain">thousands of</span> LS-DYNA SPH simulations predicts where it comes to rest &mdash; instantly, in your browser.
+  The material is the calibrated <i>&mu;(I)</i> + power-law Perzyna rheology of the dry-sand flume study.</p>
+
+  <div class="banner" id="banner" hidden></div>
+  <div class="layout">
+    <div class="card stage">
+      <canvas id="cv" width="1600" height="1000" aria-label="Flume drawing area"></canvas>
+      <div id="readout" class="readout" hidden></div>
+      <div class="legend">
+        <span><span class="sw" style="background:var(--sand)"></span>your sand (initial, 1&nbsp;cm SPH particles)</span>
+        <span><span class="sw" style="background:var(--pred)"></span>predicted deposit</span>
+        <span><span class="sw" style="background:var(--band)"></span>ensemble spread</span>
+        <span><span class="sw" style="background:var(--steel)"></span>slope &amp; floor (fixed)</span>
+      </div>
+      <p class="hint">Drag on the slope to paint the sand&rsquo;s top surface (it fills down to the slope).
+      Hold <b>Shift</b> or use the eraser to remove. Hover the deposit to read its height.</p>
+    </div>
+
+    <div class="card pad">
+      <h2>Flume</h2>
+      <div class="row">
+        <label class="lab" for="ang">Slope angle <b><span id="angv">45.0</span>&deg;</b></label>
+        <input id="ang" type="range" min="25" max="65" step="0.5" value="45">
+      </div>
+      <h2>Sand shape</h2>
+      <div class="row btns">
+        <button data-preset="base" class="primary">Experiment block</button>
+        <button data-preset="wedge">Wedge</button>
+        <button data-preset="triangle">Triangle</button>
+        <button data-preset="mound">Mound</button>
+        <button data-preset="big">Big block</button>
+        <button id="erase">Eraser: off</button>
+        <button id="clear">Clear</button>
+      </div>
+      <h2>Prediction</h2>
+      <div class="stats">
+        <div class="stat"><div class="k">Sand</div><div class="v" id="s_n">&ndash;</div></div>
+        <div class="stat"><div class="k">Volume</div><div class="v" id="s_v">&ndash;</div></div>
+        <div class="stat"><div class="k">Runout from toe</div><div class="v" id="s_run">&ndash;</div></div>
+        <div class="stat"><div class="k">Max height on floor</div><div class="v" id="s_h">&ndash;</div></div>
+        <div class="stat"><div class="k">Deposit length</div><div class="v" id="s_len">&ndash;</div></div>
+        <div class="stat"><div class="k">Left on slope</div><div class="v" id="s_slope">&ndash;</div></div>
+      </div>
+      <p class="warn" id="warn"></p>
+    </div>
+  </div>
+
+  <div class="prose">
+    <h3>What is being predicted</h3>
+    <p>The same quasi-2D flume as the experiments: a 1&nbsp;cm slice of dry sand (1276.3&nbsp;kg/m&sup3;)
+    released at rest on a rigid slope that pivots about a fixed point above a horizontal floor.
+    Each LS-DYNA run solves the release with SPH until the mass settles; the page predicts the final
+    deposit surface, drawn as height above the slope or floor beneath it.</p>
+    <h3>Training data</h3>
+    <p id="trainfacts">Loading&hellip;</p>
+    <h3>How well it works</h3>
+    <p>Scored on 150 random shapes generated with a different seed and never used for training or model selection:</p>
+    <table id="skilltab"></table>
+    <p>The light-blue band is the spread of the five ensemble members &mdash; their disagreement, not a
+    calibrated probability. It widens where the shape is unlike anything in the training set.
+    Outside the trained ranges (slope 30&ndash;60&deg;, 100&ndash;3000 particles, thickness up to
+    36&nbsp;cm, front between 0.8 and 2.3&nbsp;m up the slope) the prediction is an extrapolation and the page says so.</p>
+    <h3>Limits worth knowing</h3>
+    <p>Only the final deposit is predicted, not the flow. The underlying model was calibrated against one
+    block size at seven angles; other sizes and shapes are model predictions, not experimentally validated.
+    Below about 35&deg; the calibrated rheology keeps creeping slowly after the main flow stops, so the
+    deposit shape there depends on when the simulation ends (the schedule used is in the repository).</p>
+  </div>
+  <div id="selftest"></div>
+</div>
+
+<script>
+"use strict";
+const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
+const W = cv.width, H = cv.height;
+let M = null, layers = [];          // model header + unpacked weights
+let theta = 45;
+let G = null;                       // geometry constants from the model header
+// the shape: column heights (particle rows) on a 1 cm lattice in ramp-frame s
+const S0 = -3.40, NCOL = 336;       // columns cover s in [S0, S0 + (NCOL-1)*0.01] = [-3.40, -0.05]
+const rows = new Int16Array(NCOL);
+let erasing = false, last = null, pred = null;
+
+// ---------- world view
+const VIEW = {x0:-3.15, x1:2.05, z0:-0.12, z1:3.10};
+const PADL = 70, PADB = 78, PADT = 16, PADR = 16;
+let SC = 1;
+function fitView(){
+  SC = Math.min((W-PADL-PADR)/(VIEW.x1-VIEW.x0), (H-PADT-PADB)/(VIEW.z1-VIEW.z0));
+}
+const px = x => PADL + (x-VIEW.x0)*SC;
+const pz = z => H - PADB - (z-VIEW.z0)*SC;
+const wx = X => VIEW.x0 + (X-PADL)/SC;
+const wz = Y => VIEW.z0 + (H-PADB-Y)/SC;
+
+// ---------- geometry (mirrors scen_lib.frame)
+function frame(th){
+  const t = th*Math.PI/180, a = (60-th)*Math.PI/180;
+  return {toe:[G.pivot[0]+G.toe_arm*Math.cos(a), G.pivot[1]+G.toe_arm*Math.sin(a)],
+          d:[Math.cos(t), -Math.sin(t)], n:[Math.sin(t), Math.cos(t)], tan:Math.tan(t)};
+}
+function substrate(x, F){ return x < F.toe[0] ? F.toe[1] + (F.toe[0]-x)*F.tan : G.floor_z; }
+const colS = i => S0 + i*G.dx;
+
+// ---------- presets (in rows / columns)
+function setBlock(sBack, heights){
+  rows.fill(0);
+  const i0 = Math.round((sBack - S0)/G.dx);
+  heights.forEach((h,k)=>{ const i=i0+k; if(i>=0 && i<NCOL) rows[i]=Math.max(0,Math.round(h)); });
+}
+const PRESETS = {
+  base:     () => setBlock(G.base_block.s_back, Array(G.base_block.cols).fill(G.base_block.rows)),
+  big:      () => setBlock(-2.85, Array(90).fill(26)),
+  wedge:    () => setBlock(-2.60, Array.from({length:70},(_,k)=>4+22*k/69)),
+  triangle: () => setBlock(-2.50, Array.from({length:60},(_,k)=>3+27*(1-Math.abs(k-30)/30))),
+  mound:    () => setBlock(-2.70, Array.from({length:80},(_,k)=>3+22*Math.exp(-0.5*((k-40)/16)**2))),
+};
+
+// ---------- model
+async function loadModel(){
+  const [hdr, bin] = await Promise.all([fetch("model.json").then(r=>r.json()),
+                                         fetch("model.bin").then(r=>r.arrayBuffer())]);
+  M = hdr; G = hdr.geometry;
+  const f = new Float32Array(bin); let o = 0;
+  const take = n => { const v = f.subarray(o, o+n); o += n; return v; };
+  layers = M.members.map(L => L.map(l => ({in:l.in, out:l.out, W:take(l.in*l.out), b:take(l.out)})));
+  M.pca_mean = take(M.n_out); M.pca_comp = take(M.n_pca*M.n_out);
+  if(o !== f.length) throw new Error("model.bin size mismatch");
+}
+function forward(net, x){
+  let a = x;
+  net.forEach((L, li) => {
+    const z = new Float64Array(L.out);
+    for(let j=0;j<L.out;j++) z[j] = L.b[j];
+    for(let i=0;i<L.in;i++){ const ai=a[i]; if(ai===0) continue; const r=i*L.out;
+      for(let j=0;j<L.out;j++) z[j] += ai*L.W[r+j]; }
+    if(li < net.length-1) for(let j=0;j<L.out;j++) z[j] = Math.tanh(z[j]);
+    a = z;
+  });
+  return a;
+}
+function inputProfile(){
+  // mean thickness per 5 cm s-bin (collect_shapes.input_profile)
+  const E = M.s_edges, nb = E.length-1, out = new Float64Array(nb);
+  for(let i=0;i<NCOL;i++){ if(!rows[i]) continue;
+    const s = colS(i), lo = s-G.dx/2, hi = s+G.dx/2;
+    for(let k=0;k<nb;k++){ const ov = Math.min(hi,E[k+1]) - Math.max(lo,E[k]);
+      if(ov>0) out[k] += rows[i]*G.dx*ov/(E[k+1]-E[k]); } }
+  return out;
+}
+function predictFrom(th, xin){
+  const feat = new Float64Array(1+xin.length);
+  feat[0] = (th-45)/15; for(let k=0;k<xin.length;k++) feat[k+1] = xin[k]/0.1;
+  const members = layers.map(net => {
+    const s = forward(net, feat), h = new Float64Array(M.n_out);
+    for(let j=0;j<M.n_out;j++) h[j] = M.pca_mean[j];
+    for(let c=0;c<M.n_pca;c++){ const sc = s[c]*M.score_std[c] + M.score_mean[c], r=c*M.n_out;
+      for(let j=0;j<M.n_out;j++) h[j] += sc*M.pca_comp[r+j]; }
+    for(let j=0;j<M.n_out;j++) h[j] = Math.max(0, h[j]);
+    return h;
+  });
+  const mean = new Float64Array(M.n_out), lo = new Float64Array(M.n_out).fill(1e9), hi = new Float64Array(M.n_out);
+  members.forEach(h => { for(let j=0;j<M.n_out;j++){ mean[j]+=h[j]/members.length; lo[j]=Math.min(lo[j],h[j]); hi[j]=Math.max(hi[j],h[j]); }});
+  return {mean, lo, hi};
+}
+
+// ---------- drawing
+function draw(){
+  const F = frame(theta);
+  ctx.clearRect(0,0,W,H); ctx.fillStyle = "#fff"; ctx.fillRect(0,0,W,H);
+  // grid + axes
+  ctx.strokeStyle = getCss("--grid"); ctx.lineWidth = 1; ctx.font = "26px system-ui, sans-serif";
+  ctx.fillStyle = getCss("--muted"); ctx.textAlign = "center";
+  for(let x=-3; x<=2.001; x+=0.5){ ctx.beginPath(); ctx.moveTo(px(x),pz(VIEW.z0)); ctx.lineTo(px(x),pz(VIEW.z1)); ctx.stroke();
+    ctx.fillText(x.toFixed(1), px(x), H-PADB+28); }
+  ctx.textAlign = "right";
+  for(let z=0; z<=3.001; z+=0.5){ ctx.beginPath(); ctx.moveTo(px(VIEW.x0),pz(z)); ctx.lineTo(px(VIEW.x1),pz(z)); ctx.stroke();
+    ctx.fillText(z.toFixed(1), PADL-10, pz(z)+7); }
+  ctx.textAlign = "center"; ctx.fillText("x [m]", px((VIEW.x0+VIEW.x1)/2), H-PADB+64);
+  ctx.save(); ctx.translate(22, pz(1.6)); ctx.rotate(-Math.PI/2); ctx.textAlign="center"; ctx.fillText("z [m]",0,0); ctx.restore();
+
+  // predicted deposit + band
+  if(pred){
+    const xs = M.x_out, hmin = M.h_min;
+    ctx.fillStyle = getCss("--band");
+    polyBand(xs, j => substrate(xs[j],F)+pred.lo[j], j => substrate(xs[j],F)+pred.hi[j], j => pred.hi[j] > hmin);
+    ctx.fillStyle = "rgba(42,120,214,.55)";
+    polyBand(xs, j => substrate(xs[j],F), j => substrate(xs[j],F)+pred.mean[j], j => pred.mean[j] > hmin);
+    ctx.strokeStyle = getCss("--pred"); ctx.lineWidth = 3; ctx.beginPath(); let on=false;
+    for(let j=0;j<xs.length;j++){ if(pred.mean[j] > hmin){ const X=px(xs[j]), Y=pz(substrate(xs[j],F)+pred.mean[j]);
+      on ? ctx.lineTo(X,Y) : ctx.moveTo(X,Y); on=true; } else on=false; }
+    ctx.stroke();
+  }
+  // ramp + floor
+  const sTop = Math.min(-G.ramp_len_base, firstCol() >= 0 ? colS(firstCol()) : 0);
+  ctx.strokeStyle = getCss("--steel"); ctx.lineWidth = 5; ctx.lineCap = "round"; ctx.beginPath();
+  ctx.moveTo(px(F.toe[0]+sTop*F.d[0]), pz(F.toe[1]+sTop*F.d[1])); ctx.lineTo(px(F.toe[0]), pz(F.toe[1])); ctx.stroke();
+  ctx.strokeStyle = getCss("--floor"); ctx.beginPath();
+  ctx.moveTo(px(G.floor_x0), pz(G.floor_z)); ctx.lineTo(px(G.floor_x0+(G.floor_n-1)*G.dx), pz(G.floor_z)); ctx.stroke();
+  // pivot
+  ctx.fillStyle = getCss("--steel"); ctx.beginPath(); ctx.arc(px(G.pivot[0]), pz(G.pivot[1]), 6, 0, 7); ctx.fill();
+  // sand particles
+  ctx.fillStyle = getCss("--sand"); const r = Math.max(1.5, 0.5*G.dx*SC);
+  for(let i=0;i<NCOL;i++) for(let j=0;j<rows[i];j++){
+    const s = colS(i), n = G.sand_n_bottom + j*G.dx;
+    const X = F.toe[0]+s*F.d[0]+n*F.n[0], Z = F.toe[1]+s*F.d[1]+n*F.n[1];
+    ctx.fillRect(px(X)-r, pz(Z)-r, 2*r, 2*r);
+  }
+}
+function polyBand(xs, lo, hi, on){
+  let j=0;
+  while(j<xs.length){
+    if(!on(j)){ j++; continue; }
+    let k=j; while(k+1<xs.length && on(k+1)) k++;
+    ctx.beginPath(); ctx.moveTo(px(xs[j]), pz(lo(j)));
+    for(let i=j;i<=k;i++) ctx.lineTo(px(xs[i]), pz(hi(i)));
+    for(let i=k;i>=j;i--) ctx.lineTo(px(xs[i]), pz(lo(i)));
+    ctx.closePath(); ctx.fill(); j=k+1;
+  }
+}
+let cssCache = {}; function getCss(v){ return cssCache[v] || (cssCache[v] = getComputedStyle(document.documentElement).getPropertyValue(v).trim()); }
+function firstCol(){ for(let i=0;i<NCOL;i++) if(rows[i]) return i; return -1; }
+function lastCol(){ for(let i=NCOL-1;i>=0;i--) if(rows[i]) return i; return -1; }
+
+// ---------- stats + range checks
+function update(){
+  const n = rows.reduce((a,b)=>a+b,0);
+  pred = n > 0 ? predictFrom(theta, inputProfile()) : null;
+  const F = frame(theta);
+  set("s_n", n ? `${n}<span class="u"> particles</span>` : "&ndash;");
+  set("s_v", n ? `${(n/644).toFixed(2)}<span class="u"> &times; V&#8320;</span>` : "&ndash;");
+  if(pred){
+    const xs = M.x_out, on = [...pred.mean].map(h => h > M.h_min);
+    const iF = on.lastIndexOf(true), iB = on.indexOf(true);
+    let hmax = 0, aS = 0, aT = 0;
+    for(let j=0;j<xs.length;j++){ if(!on[j]) continue; aT += pred.mean[j];
+      if(xs[j] >= F.toe[0]) hmax = Math.max(hmax, pred.mean[j]); else aS += pred.mean[j]; }
+    set("s_run", iF>=0 ? `${(xs[iF]-F.toe[0]).toFixed(2)}<span class="u"> m</span>` : "&ndash;");
+    set("s_h", `${(hmax*100).toFixed(1)}<span class="u"> cm</span>`);
+    set("s_len", iF>=0 ? `${(xs[iF]-xs[iB]).toFixed(2)}<span class="u"> m</span>` : "&ndash;");
+    set("s_slope", aT>0 ? `${Math.round(100*aS/aT)}<span class="u"> % of section</span>` : "&ndash;");
+  } else ["s_run","s_h","s_len","s_slope"].forEach(k=>set(k,"&ndash;"));
+  // training-range warnings
+  const w = [], R = M.training_range;
+  if(theta < R.theta[0] || theta > R.theta[1]) w.push(`slope outside ${R.theta[0]}&ndash;${R.theta[1]}&deg;`);
+  if(n && (n < R.particles[0] || n > R.particles[1])) w.push(`${n} particles (trained ${R.particles[0]}&ndash;${R.particles[1]})`);
+  const mx = Math.max(...rows)*G.dx; if(mx > R.thickness_max_m+1e-9) w.push(`thickness ${(mx*100).toFixed(0)} cm &gt; ${R.thickness_max_m*100} cm`);
+  const lc = lastCol(); if(lc>=0){ const sf = colS(lc); if(sf > R.s_front[1] || sf < R.s_front[0])
+      w.push(`front ${(-sf).toFixed(2)} m up the slope (trained ${-R.s_front[1]}&ndash;${-R.s_front[0]} m)`); }
+  document.getElementById("warn").innerHTML = w.length ? "Extrapolating: " + w.join("; ") + "." : "";
+  draw();
+}
+const set = (id, h) => document.getElementById(id).innerHTML = h;
+
+// ---------- interaction: paint the top surface in ramp coordinates
+function toRamp(ev){
+  const b = cv.getBoundingClientRect();
+  const X = (ev.clientX-b.left)*W/b.width, Y = (ev.clientY-b.top)*H/b.height;
+  const x = wx(X), z = wz(Y), F = frame(theta);
+  const dx = x-F.toe[0], dz = z-F.toe[1];
+  return {s: dx*F.d[0]+dz*F.d[1], n: dx*F.n[0]+dz*F.n[1], x, z, X, Y};
+}
+function toRampXY(x, z){
+  const F = frame(theta), dx = x-F.toe[0], dz = z-F.toe[1];
+  return {s: dx*F.d[0]+dz*F.d[1], n: dx*F.n[0]+dz*F.n[1], x, z};
+}
+function paint(p){
+  const remove = erasing || p.shift;
+  const i1 = Math.round((p.s-S0)/G.dx);
+  const r1 = remove ? 0 : Math.max(0, Math.floor((p.n - G.sand_n_bottom)/G.dx) + 1);
+  const i0 = last ? last.i : i1, r0 = last ? last.r : r1;
+  const a = Math.min(i0,i1), b = Math.max(i0,i1);
+  for(let i=a;i<=b;i++){ if(i<0 || i>=NCOL) continue;
+    const t = b===a ? 1 : (i-i0)/(i1-i0); const r = Math.round(r0 + (r1-r0)*t);
+    if(remove){ if(p.n < (rows[i]+1)*G.dx + 0.05) rows[i] = Math.min(rows[i], Math.max(0, Math.floor((p.n-G.sand_n_bottom)/G.dx)+1)); }
+    else rows[i] = Math.min(60, r); }
+  last = {i:i1, r:r1};
+}
+let down = false;
+cv.addEventListener("pointerdown", ev => { down = true; last = null; cv.setPointerCapture(ev.pointerId);
+  const p = toRamp(ev); p.shift = ev.shiftKey; if(p.s <= 0 && p.n > -0.05){ paint(p); update(); } });
+cv.addEventListener("pointermove", ev => {
+  const p = toRamp(ev); p.shift = ev.shiftKey;
+  if(down){ if(p.s <= 0 && p.n > -0.05){ paint(p); update(); } hideReadout(); return; }
+  showReadout(ev, p);
+});
+cv.addEventListener("pointerup", () => { down = false; last = null; });
+cv.addEventListener("pointerleave", hideReadout);
+function showReadout(ev, p){
+  const el = document.getElementById("readout");
+  if(!pred){ el.hidden = true; return; }
+  const xs = M.x_out, j = Math.round((p.x - xs[0])/(xs[1]-xs[0]));
+  if(j<0 || j>=xs.length || pred.mean[j] <= M.h_min){ el.hidden = true; return; }
+  const b = cv.getBoundingClientRect();
+  el.innerHTML = `x = ${xs[j].toFixed(2)} m &middot; deposit ${(pred.mean[j]*100).toFixed(1)} cm `
+               + `(${(pred.lo[j]*100).toFixed(1)}&ndash;${(pred.hi[j]*100).toFixed(1)})`;
+  el.style.left = (ev.clientX - b.left + 26) + "px"; el.style.top = (ev.clientY - b.top + 4) + "px"; el.hidden = false;
+}
+function hideReadout(){ document.getElementById("readout").hidden = true; }
+
+document.getElementById("ang").addEventListener("input", e => {
+  theta = +e.target.value; document.getElementById("angv").textContent = theta.toFixed(1); update(); });
+document.querySelectorAll("[data-preset]").forEach(btn => btn.addEventListener("click", () => {
+  PRESETS[btn.dataset.preset](); update(); }));
+document.getElementById("clear").addEventListener("click", () => { rows.fill(0); update(); });
+document.getElementById("erase").addEventListener("click", e => {
+  erasing = !erasing; e.target.textContent = "Eraser: " + (erasing ? "on" : "off");
+  e.target.classList.toggle("primary", erasing); });
+
+// ---------- facts + self-test
+function fillFacts(){
+  const s = M.skill;
+  set("ntrain", s.n_train.toLocaleString("en"));
+  set("trainfacts", `${s.n_train} simulations: random shapes from five families (rectangle, wedge, triangle,
+    mound, random polyline) at slope angles drawn uniformly from 30&ndash;60&deg;, plus rectangular blocks
+    from the volume&ndash;slope study. Every run uses LS-DYNA SPH with the archived calibrated solver,
+    1&nbsp;cm particles, and is run until the mass settles. Model: ${s.members} multilayer perceptrons
+    (${s.hidden.join("&ndash;")} tanh units) predicting ${s.n_pca} principal components of the deposit surface.`);
+  const rowsT = [
+    ["Deposit surface error (mean over test shapes)", `${s.profile_rmse_cm.mlp_ensemble.toFixed(2)} cm`],
+    ["&hellip; 90th percentile", `${s.profile_rmse_cm.mlp_ensemble_p90.toFixed(2)} cm`],
+    ["Runout front position, mean abs. error", `${s.front_mae_cm.toFixed(1)} cm (R&sup2; ${s.front_r2.toFixed(3)})`],
+    ["Maximum deposit height, mean abs. error", `${s.hmax_mae_cm.toFixed(1)} cm (R&sup2; ${s.hmax_r2.toFixed(3)})`],
+    ["Baseline: 5-nearest-neighbour lookup", `${s.profile_rmse_cm.knn5.toFixed(2)} cm`],
+    ["Baseline: linear (ridge) regression", `${s.profile_rmse_cm.ridge.toFixed(2)} cm`],
+  ];
+  document.getElementById("skilltab").innerHTML = "<tr><th>Held-out test</th><th></th></tr>" +
+    rowsT.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("");
+}
+function selftest(){
+  let worst = 0;
+  M.selftest.forEach(c => { const p = predictFrom(c.theta, c.xin).mean;
+    c.pred.forEach((v,j) => worst = Math.max(worst, Math.abs(v-p[j]))); });
+  // synthetic stroke: paint a 30 cm long, 10 cm thick top surface through the pointer path
+  rows.fill(0); last = null; const F = frame(theta);
+  for(let k=0;k<=30;k++){ const s=-2.0-k*0.01, n=0.0237+0.095;
+    const x=F.toe[0]+s*F.d[0]+n*F.n[0], z=F.toe[1]+s*F.d[1]+n*F.n[1];
+    paint({...toRampXY(x,z), shift:false}); }
+  const painted = rows.reduce((a,b)=>a+b,0);
+  document.getElementById("selftest").textContent = `SELFTEST max_abs_diff_m=${worst.toExponential(3)} `
+    + (worst < 1e-4 ? "PASS" : "FAIL") + ` stroke_particles=${painted} (expect 310) ` + (painted===310 ? "PASS" : "FAIL");
+}
+
+(async function(){
+  fitView();
+  try { await loadModel(); }
+  catch(e){ document.getElementById("warn").textContent = "Could not load the model: " + e.message; return; }
+  fillFacts();
+  if(M.preliminary){ const b = document.getElementById("banner"); b.hidden = false; b.innerHTML = M.preliminary; }
+  PRESETS.base();
+  if(new URLSearchParams(location.search).has("selftest")){ selftest(); PRESETS.base(); }
+  update();
+})();
+</script>
+</body>
+</html>
