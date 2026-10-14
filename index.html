@@ -166,6 +166,25 @@
     window (for the experiments, the part of the floor the camera saw). Different sources can leave nearly the same
     deposit &mdash; a steeper slope with less sand, a gentler one with more &mdash; so the page lists distinct candidates
     rather than a single answer. Fixing the angle when it is known removes most of that ambiguity.</p>
+    <p>Run on the seven digitised experiments, every one of which came from the same block (0.46&nbsp;&times;&nbsp;0.14&nbsp;m,
+    644 particles = 1&nbsp;V&#8320;, front 1.94&nbsp;m up the slope):</p>
+    <table>
+      <tr><th>Experiment</th><th>Angle free: angle found</th><th>Angle free: volume</th><th>Angle fixed: volume</th></tr>
+      <tr><td>30&deg;</td><td>30.0&deg;</td><td>0.98&nbsp;V&#8320;</td><td>0.97&nbsp;V&#8320;</td></tr>
+      <tr><td>35&deg;</td><td>30.2&deg;</td><td>1.72&nbsp;V&#8320;</td><td>1.31&nbsp;V&#8320;</td></tr>
+      <tr><td>40&deg;</td><td>44.3&deg;</td><td>1.08&nbsp;V&#8320;</td><td>1.06&nbsp;V&#8320;</td></tr>
+      <tr><td>45&deg;</td><td>48.8&deg;</td><td>0.70&nbsp;V&#8320;</td><td>0.66&nbsp;V&#8320;</td></tr>
+      <tr><td>50&deg;</td><td>50.9&deg;</td><td>0.62&nbsp;V&#8320;</td><td>0.62&nbsp;V&#8320;</td></tr>
+      <tr><td>55&deg;</td><td>53.2&deg;</td><td>0.71&nbsp;V&#8320;</td><td>0.70&nbsp;V&#8320;</td></tr>
+      <tr><td>60&deg;</td><td>56.7&deg;</td><td>0.76&nbsp;V&#8320;</td><td>0.81&nbsp;V&#8320;</td></tr>
+    </table>
+    <p>The slope angle is recovered to about 3&deg; on average. With the angle fixed, the volume is recovered at
+    30&ndash;40&deg; but comes out 0.6&ndash;0.8&nbsp;V&#8320; at 45&ndash;60&deg; &mdash; consistently, not randomly:
+    at steep slopes the photographed deposit is lower and shorter than the calibrated model predicts for the
+    real block, so the search reaches for less sand. That is a property of the physics model and the
+    digitised data, not of the search; on deposits produced by the model itself the search recovers angle and
+    volume closely. The block&rsquo;s shape and release height are not identifiable from the part of the
+    deposit a camera sees on the floor, and the page does not pretend otherwise.</p>
     <h3>Training data</h3>
     <p id="trainfacts">Loading&hellip;</p>
     <h3>How well it works</h3>
@@ -671,6 +690,7 @@ async function selftest(){
   setMode(q.get("mode") === "inv" ? "inv" : "fwd");
   if(q.get("exp") && M.experiments[q.get("exp")]){
     setTheta(+q.get("exp")); document.getElementById("expsel").value = q.get("exp"); loadExperiment(q.get("exp"));
+    if(q.has("lock")) document.getElementById("lock").checked = true;
     if(q.has("solve")) await solve();
   }
   if(q.has("selftest")) await selftest();
