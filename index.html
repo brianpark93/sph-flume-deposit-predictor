@@ -234,21 +234,12 @@ let tz = null, win = null, lastT = null, sols = [], solSel = -1, truthInfo = nul
 // ---------- view: fitted to the flume at the current angle
 const PADL = 84, PADB = 70, PADT = 14, PADR = 14;
 let VIEW = {x0:-3, x1:2, z0:-0.1, z1:3}, SC = 1;
-// One fixed view for every angle, so the axes never jump while the slider moves:
-// the union, over the slider's whole 25-65 deg range, of the slope up to 3 m from
-// the toe (plus 30 cm of sand above it) and the floor out to 1.35 m.
+// One fixed view for every angle, so the axes never jump while the slider moves.
+const XLIM = [-2.5, 1.4], ZLIM = [-0.08, 2.5];
 let viewFixed = false;
 function fitView(){
   if(viewFixed) return;
-  let x0 = 1e9, x1 = 1.35, z1 = -1e9;
-  for(let th=25; th<=65; th+=0.5){
-    const F = frame(th), sTop = -3.0;
-    const top = [F.toe[0]+sTop*F.d[0], F.toe[1]+sTop*F.d[1]];
-    const topN = [top[0]+0.30*F.n[0], top[1]+0.30*F.n[1]];
-    x0 = Math.min(x0, top[0], topN[0]); z1 = Math.max(z1, top[1], topN[1]);
-  }
-  x0 -= 0.05; x1 += 0.05; z1 += 0.05;
-  const z0 = G.floor_z - 0.06, cw = W - PADL - PADR;
+  const [x0, x1] = XLIM, [z0, z1] = ZLIM, cw = W - PADL - PADR;
   cv.height = H = Math.round(cw*(z1-z0)/(x1-x0)) + PADT + PADB;
   SC = cw/(x1-x0);
   VIEW = {x0, x1, z0, z1};
