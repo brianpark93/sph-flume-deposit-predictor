@@ -175,28 +175,30 @@
     644 particles = 1&nbsp;V&#8320;, front 1.94&nbsp;m up the slope):</p>
     <table>
       <tr><th>Experiment</th><th>Angle free: angle found</th><th>Angle free: volume</th><th>Angle fixed: volume</th></tr>
-      <tr><td>30&deg;</td><td>30.0&deg;</td><td>0.98&nbsp;V&#8320;</td><td>0.97&nbsp;V&#8320;</td></tr>
-      <tr><td>35&deg;</td><td>30.2&deg;</td><td>1.72&nbsp;V&#8320;</td><td>1.31&nbsp;V&#8320;</td></tr>
-      <tr><td>40&deg;</td><td>44.3&deg;</td><td>1.08&nbsp;V&#8320;</td><td>1.06&nbsp;V&#8320;</td></tr>
-      <tr><td>45&deg;</td><td>48.8&deg;</td><td>0.70&nbsp;V&#8320;</td><td>0.66&nbsp;V&#8320;</td></tr>
-      <tr><td>50&deg;</td><td>50.9&deg;</td><td>0.62&nbsp;V&#8320;</td><td>0.62&nbsp;V&#8320;</td></tr>
-      <tr><td>55&deg;</td><td>53.2&deg;</td><td>0.71&nbsp;V&#8320;</td><td>0.70&nbsp;V&#8320;</td></tr>
-      <tr><td>60&deg;</td><td>56.7&deg;</td><td>0.76&nbsp;V&#8320;</td><td>0.81&nbsp;V&#8320;</td></tr>
+      <tr><td>30&deg;</td><td>30.0&deg;</td><td>1.21&nbsp;V&#8320;</td><td>1.15&nbsp;V&#8320;</td></tr>
+      <tr><td>35&deg;</td><td>30.0&deg;</td><td>1.44&nbsp;V&#8320;</td><td>1.06&nbsp;V&#8320;</td></tr>
+      <tr><td>40&deg;</td><td>34.8&deg;</td><td>1.37&nbsp;V&#8320;</td><td>1.08&nbsp;V&#8320;</td></tr>
+      <tr><td>45&deg;</td><td>48.2&deg;</td><td>0.70&nbsp;V&#8320;</td><td>0.75&nbsp;V&#8320;</td></tr>
+      <tr><td>50&deg;</td><td>49.3&deg;</td><td>0.75&nbsp;V&#8320;</td><td>0.74&nbsp;V&#8320;</td></tr>
+      <tr><td>55&deg;</td><td>47.4&deg;</td><td>0.75&nbsp;V&#8320;</td><td>0.89&nbsp;V&#8320;</td></tr>
+      <tr><td>60&deg;</td><td>52.1&deg;</td><td>0.74&nbsp;V&#8320;</td><td>0.82&nbsp;V&#8320;</td></tr>
     </table>
-    <p>The slope angle is recovered to about 3&deg; on average. With the angle fixed, the volume is recovered at
-    30&ndash;40&deg; but comes out 0.6&ndash;0.8&nbsp;V&#8320; at 45&ndash;60&deg; &mdash; consistently, not randomly:
-    at steep slopes the photographed deposit is lower and shorter than the calibrated model predicts for the
-    real block, so the search reaches for less sand. That is a property of the physics model and the
-    digitised data, not of the search; on deposits produced by the model itself the search recovers angle and
-    volume closely. The block&rsquo;s shape and release height are not identifiable from the part of the
-    deposit a camera sees on the floor, and the page does not pretend otherwise.</p>
+    <p>With the angle fixed, the volume is recovered to within about 15&nbsp;% at 30&ndash;40&deg;, but comes out
+    0.74&ndash;0.89&nbsp;V&#8320; at 45&ndash;60&deg; &mdash; consistently, not randomly: at steep slopes the
+    photographed deposit is lower and shorter than the calibrated model predicts for the real block, so the search
+    reaches for less sand. That is a property of the physics model and the digitised data, not of the search; on
+    deposits produced by the model itself the search recovers angle and volume closely. Left free, the angle is
+    found within about 4&deg; on average, but the steep-slope deposits (45&ndash;60&deg;) look so alike in the camera
+    window that the angle among them is only weakly determined &mdash; fix it whenever it is known. The block&rsquo;s
+    shape and release height are not identifiable from the part of the deposit a camera sees on the floor, and the
+    page does not pretend otherwise.</p>
     <h3>When the page refuses to predict</h3>
     <p>The network learned only what its training shapes look like: one connected mass, at most three humps,
     and outlines no more jagged than the random polylines it was trained on. The page checks every drawing
     against those three limits, measured on the 1&nbsp;cm columns you draw. Sand in several separate pieces gets
     no prediction at all (several masses can catch up with and pile into each other, which no training run
     shows); a single piece with too many humps or too jagged an outline gets a grey dashed prediction marked
-    unreliable. 148 of the 149 held-out test shapes pass the checks. A statistical test on the network&rsquo;s
+    unreliable. All 149 held-out test shapes pass the checks. A statistical test on the network&rsquo;s
     5&nbsp;cm-averaged input was tried first and rejected: it let a drawing of five thin separate patches through,
     because averaging makes them look like one long thin layer.</p>
     <h3>Training data</h3>
@@ -712,7 +714,8 @@ function fillFacts(){
   const s = M.skill;
   set("ntrain", s.n_train.toLocaleString("en"));
   set("trainfacts", `${s.n_train} simulations: random shapes from five families (rectangle, wedge, triangle,
-    mound, random polyline) at slope angles drawn uniformly from 30&ndash;60&deg;, plus rectangular blocks
+    mound, random polyline) at slope angles drawn uniformly from 30&ndash;60&deg; &mdash; half of the later ones
+    chosen where an earlier ensemble disagreed most &mdash; plus rectangular blocks
     from the volume&ndash;slope study. Every run uses LS-DYNA SPH with the archived calibrated solver,
     1&nbsp;cm particles, and is run until the mass settles. Model: ${s.members} multilayer perceptrons
     (${s.hidden.join("&ndash;")} tanh units) predicting ${s.n_pca} principal components of the deposit surface.`);
