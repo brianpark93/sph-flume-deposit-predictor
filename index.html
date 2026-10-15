@@ -232,25 +232,27 @@ let erasing = false, last = null, pred = null;
 let tz = null, win = null, lastT = null, sols = [], solSel = -1, truthInfo = null, solving = false;
 
 // ---------- view: fitted to the flume at the current angle
-const PADL = 64, PADB = 70, PADT = 14, PADR = 14;
+const PADL = 84, PADB = 70, PADT = 14, PADR = 14;
 let VIEW = {x0:-3, x1:2, z0:-0.1, z1:3}, SC = 1;
+// One fixed view for every angle, so the axes never jump while the slider moves:
+// the union, over the slider's whole 25-65 deg range, of the slope up to 3 m from
+// the toe (plus 30 cm of sand above it) and the floor out to 1.35 m.
+let viewFixed = false;
 function fitView(){
-  const F = frame(theta);
-  let sTop = -2.75; const fc = firstCol(); if(mode==="fwd" && fc>=0) sTop = Math.min(sTop, colS(fc)-0.05);
-  if(mode==="inv" && solSel>=0) sTop = Math.min(sTop, sols[solSel].sF - sols[solSel].L - 0.05);
-  const pts = [[F.toe[0], F.toe[1]], [F.toe[0]+sTop*F.d[0], F.toe[1]+sTop*F.d[1]],
-               [F.toe[0]+sTop*F.d[0]+0.30*F.n[0], F.toe[1]+sTop*F.d[1]+0.30*F.n[1]], [1.35, G.floor_z]];
-  let x0 = Math.min(...pts.map(p=>p[0])), x1 = Math.max(...pts.map(p=>p[0]));
-  let z0 = G.floor_z - 0.06, z1 = Math.max(...pts.map(p=>p[1])) + 0.05;
-  x0 -= 0.05; x1 += 0.05;
-  const cw = W - PADL - PADR;
-  const want = Math.round(cw*(z1-z0)/(x1-x0)) + PADT + PADB;
-  const h = Math.max(560, Math.min(1000, want));
-  if(h !== H){ cv.height = H = h; }
-  SC = Math.min(cw/(x1-x0), (H-PADT-PADB)/(z1-z0));
-  const cx = (x0+x1)/2, cz = (z0+z1)/2;
-  VIEW = {x0: cx - cw/SC/2, x1: cx + cw/SC/2, z0: z0, z1: z0 + (H-PADT-PADB)/SC};
-  if(VIEW.z1 > z1 + 0.02){ /* extra height: keep floor at bottom */ }
+  if(viewFixed) return;
+  let x0 = 1e9, x1 = 1.35, z1 = -1e9;
+  for(let th=25; th<=65; th+=0.5){
+    const F = frame(th), sTop = -3.0;
+    const top = [F.toe[0]+sTop*F.d[0], F.toe[1]+sTop*F.d[1]];
+    const topN = [top[0]+0.30*F.n[0], top[1]+0.30*F.n[1]];
+    x0 = Math.min(x0, top[0], topN[0]); z1 = Math.max(z1, top[1], topN[1]);
+  }
+  x0 -= 0.05; x1 += 0.05; z1 += 0.05;
+  const z0 = G.floor_z - 0.06, cw = W - PADL - PADR;
+  cv.height = H = Math.round(cw*(z1-z0)/(x1-x0)) + PADT + PADB;
+  SC = cw/(x1-x0);
+  VIEW = {x0, x1, z0, z1};
+  viewFixed = true;
 }
 const px = x => PADL + (x-VIEW.x0)*SC;
 const pz = z => H - PADB - (z-VIEW.z0)*SC;
