@@ -52,6 +52,10 @@
   .stat .v{font-size:19px;font-weight:600;font-variant-numeric:tabular-nums}
   .stat .u{font-size:12px;color:var(--muted);font-weight:400}
   .warn{color:var(--warn);font-size:13px;margin:10px 0 0;min-height:1em}
+  .ood{background:#fdecea;border:1px solid #f1b7b1;color:#7a1c14;border-radius:10px;padding:9px 12px;
+       font-size:13.5px;margin:6px 4px 4px}
+  .ood button{margin-left:8px;padding:3px 10px;font-size:12.5px}
+  .stats.dim .stat.pv .v{color:var(--muted);text-decoration:line-through;text-decoration-color:rgba(0,0,0,.25)}
   .note{color:var(--muted);font-size:13px;margin:8px 0 0}
   .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--muted);margin:4px 4px 0}
   .sw{display:inline-block;width:14px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
@@ -92,6 +96,7 @@
     <div class="card stage">
       <canvas id="cv" width="1600" height="900" aria-label="Flume drawing area"></canvas>
       <div id="readout" class="readout" hidden></div>
+      <div class="ood" id="ood" hidden></div>
       <div class="legend" id="legend"></div>
       <p class="hint" id="hint"></p>
     </div>
@@ -114,13 +119,13 @@
         <button id="clear">Clear</button>
       </div>
       <h2>Prediction</h2>
-      <div class="stats">
+      <div class="stats" id="stats">
         <div class="stat"><div class="k">Sand</div><div class="v" id="s_n">&ndash;</div></div>
         <div class="stat"><div class="k">Volume</div><div class="v" id="s_v">&ndash;</div></div>
-        <div class="stat"><div class="k">Runout from toe</div><div class="v" id="s_run">&ndash;</div></div>
-        <div class="stat"><div class="k">Max height on floor</div><div class="v" id="s_h">&ndash;</div></div>
-        <div class="stat"><div class="k">Deposit length</div><div class="v" id="s_len">&ndash;</div></div>
-        <div class="stat"><div class="k">Left on slope</div><div class="v" id="s_slope">&ndash;</div></div>
+        <div class="stat pv"><div class="k">Runout from toe</div><div class="v" id="s_run">&ndash;</div></div>
+        <div class="stat pv"><div class="k">Max height on floor</div><div class="v" id="s_h">&ndash;</div></div>
+        <div class="stat pv"><div class="k">Deposit length</div><div class="v" id="s_len">&ndash;</div></div>
+        <div class="stat pv"><div class="k">Left on slope</div><div class="v" id="s_slope">&ndash;</div></div>
       </div>
       <p class="warn" id="warn"></p>
     </div>
@@ -185,6 +190,15 @@
     digitised data, not of the search; on deposits produced by the model itself the search recovers angle and
     volume closely. The block&rsquo;s shape and release height are not identifiable from the part of the
     deposit a camera sees on the floor, and the page does not pretend otherwise.</p>
+    <h3>When the page refuses to predict</h3>
+    <p>The network learned only what its training shapes look like: one connected mass, at most three humps,
+    and outlines no more jagged than the random polylines it was trained on. The page checks every drawing
+    against those three limits, measured on the 1&nbsp;cm columns you draw. Sand in several separate pieces gets
+    no prediction at all (several masses can catch up with and pile into each other, which no training run
+    shows); a single piece with too many humps or too jagged an outline gets a grey dashed prediction marked
+    unreliable. 148 of the 149 held-out test shapes pass the checks. A statistical test on the network&rsquo;s
+    5&nbsp;cm-averaged input was tried first and rejected: it let a drawing of five thin separate patches through,
+    because averaging makes them look like one long thin layer.</p>
     <h3>Training data</h3>
     <p id="trainfacts">Loading&hellip;</p>
     <h3>How well it works</h3>
@@ -347,14 +361,14 @@ function particles(F, colsArr, sBack){
     const s = sBack + i*G.dx, n = G.sand_n_bottom + j*G.dx;
     ctx.fillRect(px(F.toe[0]+s*F.d[0]+n*F.n[0])-r, pz(F.toe[1]+s*F.d[1]+n*F.n[1])-r, 2*r, 2*r); } });
 }
-function deposit(P, F){
+function deposit(P, F, unreliable){
   const xs = M.x_out, hmin = M.h_min;
-  ctx.fillStyle = css("--band");
+  ctx.fillStyle = unreliable ? "rgba(110,110,115,.10)" : css("--band");
   polyBand(xs, j => substrate(xs[j],F)+P.lo[j], j => substrate(xs[j],F)+P.hi[j], j => P.hi[j] > hmin);
-  ctx.fillStyle = "rgba(42,120,214,.55)";
+  ctx.fillStyle = unreliable ? "rgba(110,110,115,.30)" : "rgba(42,120,214,.55)";
   polyBand(xs, j => substrate(xs[j],F), j => substrate(xs[j],F)+P.mean[j], j => P.mean[j] > hmin);
-  ctx.strokeStyle = css("--pred"); ctx.lineWidth = 3; ctx.setLineDash([]);
-  strokeRuns(xs, j => P.mean[j] > hmin, j => substrate(xs[j],F)+P.mean[j]);
+  ctx.strokeStyle = unreliable ? css("--muted") : css("--pred"); ctx.lineWidth = 3; ctx.setLineDash(unreliable ? [10,8] : []);
+  strokeRuns(xs, j => P.mean[j] > hmin, j => substrate(xs[j],F)+P.mean[j]); ctx.setLineDash([]);
 }
 function polyBand(xs, lo, hi, on){
   let j=0;
@@ -376,7 +390,7 @@ function draw(){
   fitView(); axes();
   const F = frame(theta);
   if(mode === "fwd"){
-    if(pred) deposit(pred, F);
+    if(pred) deposit(pred, F, ood.level === "unreliable");
     const fc = firstCol();
     flume(F, Math.min(-(G.ramp_len_base), fc>=0 ? colS(fc) : 0));
     const lc = lastCol(); if(fc>=0) particles(F, Array.from(rows.slice(fc, lc+1)), colS(fc));
@@ -403,11 +417,64 @@ function drawTarget(F){
   }
 }
 
+// ---------- out-of-distribution checks (mirror novelty.py exactly)
+function trimRows(r){ let a=0, b=r.length-1; while(a<=b && !r[a]) a++; while(b>=a && !r[b]) b--; return Array.from(r.slice(a, b+1)); }
+function countPieces(r){ let n=0; for(let i=0;i<r.length;i++) if(r[i]>0 && (i===0 || !(r[i-1]>0))) n++; return n; }
+function countPeaks(rr, prom){
+  const r = trimRows(rr); let n = 0;
+  for(let i=0;i<r.length;i++){
+    if(i>0 && r[i-1] >= r[i]) continue;
+    let j=i; while(j+1<r.length && r[j+1]===r[i]) j++;
+    if(j+1<r.length && r[j+1] > r[i]) continue;
+    let lb = r[i], hitL = false; for(let k=i-1;k>=0;k--){ if(r[k] > r[i]){ hitL = true; break; } lb = Math.min(lb, r[k]); } if(!hitL) lb = 0;
+    let rb = r[i], hitR = false; for(let k=j+1;k<r.length;k++){ if(r[k] > r[i]){ hitR = true; break; } rb = Math.min(rb, r[k]); } if(!hitR) rb = 0;
+    if(r[i] - Math.max(lb, rb) >= prom) n++;
+  }
+  return n;
+}
+function roughness(rr){
+  const r = trimRows(rr); if(r.length < 2) return 0;
+  const e = [0, ...r, 0]; let tv = 0; for(let i=1;i<e.length;i++) tv += Math.abs(e[i]-e[i-1]);
+  const mx = Math.max(...r); return (tv - 2*mx)/mx;
+}
+let ood = {level: "ok"};
+function checkShape(){
+  const N = M.novelty, c = {pieces: countPieces(rows), peaks: countPeaks(rows, N.peak_prominence_rows), rough: roughness(rows)};
+  if(c.pieces > N.pieces_max) return {...c, level: "block"};
+  if(c.peaks > N.peaks_max || c.rough > N.roughness_max) return {...c, level: "unreliable"};
+  return {...c, level: "ok"};
+}
+function keepLargestPiece(){
+  let best = [0,-1], i = 0;
+  while(i < NCOL){ if(!rows[i]){ i++; continue; } let j=i, m=0; while(j<NCOL && rows[j]){ m += rows[j]; j++; }
+    if(m > best[2] || best[1] < 0) best = [i, j-1, m]; i = j; }
+  for(let k=0;k<NCOL;k++) if(k < best[0] || k > best[1]) rows[k] = 0;
+  updateFwd();
+}
+function showOod(){
+  const el = document.getElementById("ood"), N = M.novelty;
+  if(ood.level === "block"){
+    el.innerHTML = `<b>No prediction:</b> your sand is in ${ood.pieces} separate pieces. The model was trained only on
+      a single connected mass, so it cannot say what several interacting masses would do.
+      <button id="keepbig">Keep the largest piece</button>`;
+    el.hidden = false; document.getElementById("keepbig").addEventListener("click", keepLargestPiece);
+  } else if(ood.level === "unreliable"){
+    const why = [];
+    if(ood.peaks > N.peaks_max) why.push(`${ood.peaks} separate humps (training shapes have at most ${N.peaks_max})`);
+    if(ood.rough > N.roughness_max) why.push(`a much more jagged outline than any training shape`);
+    el.innerHTML = `<b>Unreliable:</b> this shape has ${why.join(" and ")}. The grey dashed deposit is shown for reference only.`;
+    el.hidden = false;
+  } else el.hidden = true;
+  document.getElementById("stats").classList.toggle("dim", ood.level !== "ok");
+}
+
 // ---------- forward stats
 const set = (id, h) => document.getElementById(id).innerHTML = h;
 function updateFwd(){
   const n = rows.reduce((a,b)=>a+b,0);
-  pred = n > 0 ? predictFrom(theta, inputProfile()) : null;
+  ood = n > 0 ? checkShape() : {level: "ok"};
+  pred = n > 0 && ood.level !== "block" ? predictFrom(theta, inputProfile()) : null;
+  showOod();
   const F = frame(theta);
   set("s_n", n ? `${n}<span class="u"> particles</span>` : "&ndash;");
   set("s_v", n ? `${(n/644).toFixed(2)}<span class="u"> &times; V&#8320;</span>` : "&ndash;");
@@ -622,6 +689,7 @@ function setMode(m){
   document.getElementById("m_fwd").classList.toggle("active", m==="fwd");
   document.getElementById("m_inv").classList.toggle("active", m==="inv");
   document.getElementById("p_fwd").hidden = m!=="fwd"; document.getElementById("p_inv").hidden = m!=="inv";
+  if(m!=="fwd") document.getElementById("ood").hidden = true;
   set("legend", m==="fwd"
     ? `<span><span class="sw" style="background:var(--sand)"></span>your sand (initial, 1&nbsp;cm SPH particles)</span>
        <span><span class="sw" style="background:var(--pred)"></span>predicted deposit</span>
@@ -671,6 +739,13 @@ async function selftest(){
   const painted = rows.reduce((a,b)=>a+b,0);
   let out = `SELFTEST max_abs_diff_m=${worst.toExponential(3)} ` + (worst < 1e-4 ? "PASS" : "FAIL")
           + ` stroke_particles=${painted} (expect 310) ` + (painted===310 ? "PASS" : "FAIL");
+  // shape checks: JS must reproduce novelty.py on its fixtures
+  const fxOk = M.novelty.fixtures.every(f => countPieces(f.rows)===f.pieces && countPeaks(f.rows, M.novelty.peak_prominence_rows)===f.peaks
+                                        && Math.abs(roughness(f.rows)-f.roughness) < 1e-5);
+  rows.fill(0); for(let k=0;k<15;k++){ rows[40+k]=3; rows[100+k]=4; rows[160+k]=5; } updateFwd();
+  const blocked = ood.level === "block" && pred === null;
+  keepLargestPiece(); const kept = countPieces(rows) === 1 && rows.reduce((a,b)=>a+b,0) === 75;
+  out += ` shapecheck_fixtures ${fxOk ? "PASS" : "FAIL"} multipiece_blocked ${blocked ? "PASS" : "FAIL"} keep_largest ${kept ? "PASS" : "FAIL"}`;
   // inverse round trip: target = forward prediction of the experiment block at 45 deg
   PRESETS.base(); setTheta(45); updateFwd(); document.getElementById("fromfwd").click();
   setTheta(38); await solve(); const s = sols[0], n = blockCols(s);
@@ -687,6 +762,11 @@ async function selftest(){
   PRESETS.base();
   const q = new URLSearchParams(location.search);
   if(q.get("angle")) setTheta(Math.min(65, Math.max(25, +q.get("angle"))));
+  if(q.get("shape")){
+    // ?shape=<s_back>;<rows,rows,...>  e.g. shape=-2.39;14,14,14  (0 = empty column)
+    const [sb, rr] = q.get("shape").split(";");
+    if(rr) setBlock(+sb, rr.split(",").map(Number));
+  }
   setMode(q.get("mode") === "inv" ? "inv" : "fwd");
   if(q.get("exp") && M.experiments[q.get("exp")]){
     setTheta(+q.get("exp")); document.getElementById("expsel").value = q.get("exp"); loadExperiment(q.get("exp"));
