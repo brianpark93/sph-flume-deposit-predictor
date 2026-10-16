@@ -146,6 +146,10 @@
         <label class="lab" for="ang2">Angle <b><span id="angv2">45.0</span>&deg;</b></label>
         <input id="ang2" type="range" min="30" max="60" step="0.5" value="45">
         <label class="chk"><input type="checkbox" id="lock"> Angle is known &mdash; keep it fixed</label>
+        <label class="chk"><input type="checkbox" id="lockf"> Release front is known:
+          <input type="number" id="frontv" value="1.94" min="0.05" max="2.85" step="0.01" style="width:5.2em;font:inherit;font-size:13px"> m up the slope</label>
+        <label class="chk"><input type="checkbox" id="lockr"> Block proportions are known: length/thickness
+          <input type="number" id="ratiov" value="3.29" min="0.2" max="60" step="0.01" style="width:4.6em;font:inherit;font-size:13px"></label>
       </div>
       <div class="row">
         <button class="go" id="solve">Find the source</button>
@@ -172,26 +176,26 @@
     deposit &mdash; a steeper slope with less sand, a gentler one with more &mdash; so the page lists distinct candidates
     rather than a single answer. Fixing the angle when it is known removes most of that ambiguity.</p>
     <p>Run on the seven digitised experiments, every one of which came from the same block (0.46&nbsp;&times;&nbsp;0.14&nbsp;m,
-    644 particles = 1&nbsp;V&#8320;, front 1.94&nbsp;m up the slope):</p>
+    644 particles = 1&nbsp;V&#8320;, front 1.94&nbsp;m up the slope). Loading an experiment fixes what the experiment itself
+    tells you &mdash; where the box sat and its proportions &mdash; and leaves the angle and the amount of sand to be found:</p>
     <table>
       <tr><th>Experiment</th><th>Angle free: angle found</th><th>Angle free: volume</th><th>Angle fixed: volume</th></tr>
-      <tr><td>30&deg;</td><td>30.0&deg;</td><td>1.21&nbsp;V&#8320;</td><td>1.15&nbsp;V&#8320;</td></tr>
-      <tr><td>35&deg;</td><td>30.0&deg;</td><td>1.44&nbsp;V&#8320;</td><td>1.06&nbsp;V&#8320;</td></tr>
-      <tr><td>40&deg;</td><td>34.8&deg;</td><td>1.37&nbsp;V&#8320;</td><td>1.08&nbsp;V&#8320;</td></tr>
-      <tr><td>45&deg;</td><td>48.2&deg;</td><td>0.70&nbsp;V&#8320;</td><td>0.75&nbsp;V&#8320;</td></tr>
-      <tr><td>50&deg;</td><td>49.3&deg;</td><td>0.75&nbsp;V&#8320;</td><td>0.74&nbsp;V&#8320;</td></tr>
-      <tr><td>55&deg;</td><td>47.4&deg;</td><td>0.75&nbsp;V&#8320;</td><td>0.89&nbsp;V&#8320;</td></tr>
-      <tr><td>60&deg;</td><td>52.1&deg;</td><td>0.74&nbsp;V&#8320;</td><td>0.82&nbsp;V&#8320;</td></tr>
+      <tr><td>30&deg;</td><td>30.0&deg;</td><td>1.00&nbsp;V&#8320;</td><td>1.00&nbsp;V&#8320;</td></tr>
+      <tr><td>35&deg;</td><td>30.0&deg;</td><td>2.05&nbsp;V&#8320;</td><td>1.16&nbsp;V&#8320;</td></tr>
+      <tr><td>40&deg;</td><td>34.8&deg;</td><td>1.43&nbsp;V&#8320;</td><td>1.00&nbsp;V&#8320;</td></tr>
+      <tr><td>45&deg;</td><td>59.3&deg;</td><td>0.87&nbsp;V&#8320;</td><td>0.75&nbsp;V&#8320;</td></tr>
+      <tr><td>50&deg;</td><td>49.8&deg;</td><td>0.75&nbsp;V&#8320;</td><td>0.75&nbsp;V&#8320;</td></tr>
+      <tr><td>55&deg;</td><td>51.1&deg;</td><td>0.89&nbsp;V&#8320;</td><td>0.89&nbsp;V&#8320;</td></tr>
+      <tr><td>60&deg;</td><td>53.8&deg;</td><td>0.98&nbsp;V&#8320;</td><td>0.89&nbsp;V&#8320;</td></tr>
     </table>
-    <p>With the angle fixed, the volume is recovered to within about 15&nbsp;% at 30&ndash;40&deg;, but comes out
-    0.74&ndash;0.89&nbsp;V&#8320; at 45&ndash;60&deg; &mdash; consistently, not randomly: at steep slopes the
-    photographed deposit is lower and shorter than the calibrated model predicts for the real block, so the search
-    reaches for less sand. That is a property of the physics model and the digitised data, not of the search; on
-    deposits produced by the model itself the search recovers angle and volume closely. Left free, the angle is
-    found within about 4&deg; on average, but the steep-slope deposits (45&ndash;60&deg;) look so alike in the camera
-    window that the angle among them is only weakly determined &mdash; fix it whenever it is known. The block&rsquo;s
-    shape and release height are not identifiable from the part of the deposit a camera sees on the floor, and the
-    page does not pretend otherwise.</p>
+    <p>With the angle fixed as well, the volume comes back within about 13&nbsp;% on average &mdash; exactly, block size
+    included, at 30&deg; and 40&deg; &mdash; and on the low side (0.75&ndash;0.89&nbsp;V&#8320;) at 45&ndash;60&deg;, because at steep
+    slopes the photographed deposit is lower and shorter than the calibrated model predicts for the real block. Left free,
+    the angle is found within about 5&deg; on average but the steep-slope deposits look so alike in the camera window that
+    45&deg; can come back as 59&deg;. Without the release position and proportions fixed, the search finds sources that
+    match the photographed deposit even better and are physically different &mdash; a 2&nbsp;cm sheet lying at the toe, a
+    tall column at the top of the slope &mdash; because the part of a deposit a camera sees on the floor does not pin down
+    where the sand started or what shape it had. The options are there so that whatever you know can be fixed.</p>
     <h3>When the page refuses to predict</h3>
     <p>The network learned only what its training shapes look like: one connected mass, at most three humps,
     and outlines no more jagged than the random polylines it was trained on. The page checks every drawing
@@ -207,8 +211,10 @@
     <p>Scored on random shapes generated with a different seed and never used for training or model selection:</p>
     <table id="skilltab"></table>
     <p>The light-blue band is the spread of the five ensemble members &mdash; their disagreement, not a
-    calibrated probability. Outside the trained ranges (slope 30&ndash;60&deg;, 100&ndash;3000 particles, thickness up to
-    36&nbsp;cm, front between 0.8 and 2.3&nbsp;m up the slope) the prediction is an extrapolation and the page says so.</p>
+    calibrated probability. Sand size, thickness and position along the slope are covered by simulation over everything
+    the page lets you draw (<span id="rangefacts">see the training data</span>); drawing stops at the largest simulated
+    thickness and particle count. The slope angle is the one input that is not: the rheology was calibrated on
+    30&ndash;60&deg;, and outside that the page says the prediction is an extrapolation.</p>
     <h3>Limits worth knowing</h3>
     <p>Only the final deposit is predicted, not the flow. The underlying model was calibrated against one
     block size at seven angles; other sizes and shapes are model predictions, not experimentally validated.
@@ -235,7 +241,7 @@ let tz = null, win = null, lastT = null, sols = [], solSel = -1, truthInfo = nul
 const PADL = 84, PADB = 70, PADT = 14, PADR = 14;
 let VIEW = {x0:-3, x1:2, z0:-0.1, z1:3}, SC = 1;
 // One fixed view for every angle, so the axes never jump while the slider moves.
-const XLIM = [-2.5, 1.4], ZLIM = [-0.08, 2.5];
+const XLIM = [-2.5, 1.8], ZLIM = [-0.08, 2.5];   // 1.8 m: the longest simulated runout is 1.68 m
 let viewFixed = false;
 function fitView(){
   if(viewFixed) return;
@@ -448,7 +454,10 @@ function keepLargestPiece(){
 }
 function showOod(){
   const el = document.getElementById("ood"), N = M.novelty;
-  if(ood.level === "block"){
+  if(ood.small){
+    el.innerHTML = `<b>Too small:</b> ${ood.n} particles. The smallest simulated mass has ${M.training_range.particles[0]}; keep drawing.`;
+    el.hidden = false;
+  } else if(ood.level === "block"){
     el.innerHTML = `<b>No prediction:</b> your sand is in ${ood.pieces} separate pieces. The model was trained only on
       a single connected mass, so it cannot say what several interacting masses would do.
       <button id="keepbig">Keep the largest piece</button>`;
@@ -468,6 +477,8 @@ const set = (id, h) => document.getElementById(id).innerHTML = h;
 function updateFwd(){
   const n = rows.reduce((a,b)=>a+b,0);
   ood = n > 0 ? checkShape() : {level: "ok"};
+  const tooSmall = n > 0 && n < M.training_range.particles[0];
+  if(tooSmall) ood = {level: "block", small: true, n};
   pred = n > 0 && ood.level !== "block" ? predictFrom(theta, inputProfile()) : null;
   showOod();
   const F = frame(theta);
@@ -484,23 +495,38 @@ function updateFwd(){
     set("s_len", iF>=0 ? `${(xs[iF]-xs[iB]).toFixed(2)}<span class="u"> m</span>` : "&ndash;");
     set("s_slope", aT>0 ? `${Math.round(100*aS/aT)}<span class="u"> % of section</span>` : "&ndash;");
   } else ["s_run","s_h","s_len","s_slope"].forEach(k=>set(k,"&ndash;"));
+  // the slope angle is the one input not covered by simulation: the rheology was
+  // calibrated on 30-60 deg only. Size, thickness and position are all simulated.
   const w = [], R = M.training_range;
-  if(theta < R.theta[0] || theta > R.theta[1]) w.push(`slope outside ${R.theta[0]}&ndash;${R.theta[1]}&deg;`);
-  if(n && (n < R.particles[0] || n > R.particles[1])) w.push(`${n} particles (trained ${R.particles[0]}&ndash;${R.particles[1]})`);
-  const mx = Math.max(...rows)*G.dx; if(mx > R.thickness_max_m+1e-9) w.push(`thickness ${(mx*100).toFixed(0)} cm &gt; ${R.thickness_max_m*100} cm`);
-  const lc = lastCol(); if(lc>=0){ const sf = colS(lc); if(sf > R.s_front[1] || sf < R.s_front[0])
-      w.push(`front ${(-sf).toFixed(2)} m up the slope (trained ${-R.s_front[1]}&ndash;${-R.s_front[0]} m)`); }
-  set("warn", w.length ? "Extrapolating: " + w.join("; ") + "." : "");
+  if(theta < R.theta[0] || theta > R.theta[1])
+    w.push(`Slope outside the calibrated ${R.theta[0]}&ndash;${R.theta[1]}&deg;: the prediction is an extrapolation.`);
+  if(capHit) w.push(`Drawing is capped at ${Math.round(R.thickness_max_m*100)}&nbsp;cm thick and ${R.particles[1].toLocaleString("en")} particles &mdash; the largest simulated.`);
+  set("warn", w.join(" ")); capHit = false;
   draw();
 }
 
 // ---------- inverse: objective and search
+// the known release front, as ramp-frame s, clamped to the simulated range
+function knownFront(){
+  const R = M.training_range.s_front, up = +document.getElementById("frontv").value;
+  return Math.min(R[1], Math.max(R[0], -up));
+}
 const BOUNDS = () => ({th: document.getElementById("lock").checked ? [theta, theta] : M.training_range.theta,
-                       sF: M.training_range.s_front, L: [0.10, 1.30], T: [0.02, M.training_range.thickness_max_m]});
+                       sF: document.getElementById("lockf").checked ? (sf => [sf, sf])(knownFront()) : M.training_range.s_front,
+                       ratio: document.getElementById("lockr").checked ? Math.max(0.2, +document.getElementById("ratiov").value) : 0, L: [0.05, 2.80], T: [0.02, M.training_range.thickness_max_m]});
 function decode(u, B){
   const th = B.th[0] + u[0]*(B.th[1]-B.th[0]);
   const sF = B.sF[0] + u[1]*(B.sF[1]-B.sF[0]);
   const Lmax = Math.min(B.L[1], sF - G.s_min_allowed);
+  if(B.ratio){
+    // proportions known: search the block area only (log-uniform over the simulated particle range)
+    const P = M.training_range.particles, a0 = Math.log(P[0]*G.dx*G.dx), a1 = Math.log(P[1]*G.dx*G.dx);
+    const A = Math.exp(a0 + u[2]*(a1-a0));
+    let L = Math.sqrt(A*B.ratio), T = Math.sqrt(A/B.ratio);
+    if(T > B.T[1]){ T = B.T[1]; L = A/T; }
+    if(L > Lmax){ L = Lmax; T = Math.min(B.T[1], A/L); }
+    return {th, sF, L, T};
+  }
   const L = B.L[0] + u[2]*(Lmax-B.L[0]);
   const T = B.T[0] + u[3]*(B.T[1]-B.T[0]);
   return {th, sF, L, T};
@@ -587,13 +613,18 @@ function renderSols(){
 function clearSols(){ sols = []; solSel = -1; document.getElementById("prog").style.width = "0"; renderSols(); }
 function loadExperiment(a){
   const e = M.experiments[a]; if(!e) return;
+  // what the experiment itself tells you: where the box sat and its proportions
+  const bb = G.base_block;
+  document.getElementById("lockf").checked = true;
+  document.getElementById("frontv").value = (-(bb.s_back + (bb.cols-1)*G.dx)).toFixed(2);
+  document.getElementById("lockr").checked = true;
+  document.getElementById("ratiov").value = (bb.cols/bb.rows).toFixed(2);
   tz = new Float64Array(M.n_out).fill(NaN);
   const xs = M.x_out;
   for(let j=0;j<xs.length;j++){ const x = xs[j]; if(x < e.x[0] || x > e.x[e.x.length-1]) continue;
     let k = 0; while(k < e.x.length-2 && e.x[k+1] < x) k++;
     const t = (x - e.x[k])/(e.x[k+1]-e.x[k]); tz[j] = e.z[k] + t*(e.z[k+1]-e.z[k]); }
   win = [e.x[0], e.x[e.x.length-1]];
-  const bb = G.base_block;
   truthInfo = `Experiment: slope ${a}&deg;, block ${(bb.cols*G.dx).toFixed(2)} &times; ${(bb.rows*G.dx).toFixed(2)} m `
             + `(${bb.cols*bb.rows} particles), front ${(-(bb.s_back+(bb.cols-1)*G.dx)).toFixed(2)} m up the slope. `
             + `Only the floor inside the camera window was digitised.`;
@@ -614,9 +645,19 @@ function paint(p){
   for(let i=a;i<=b;i++){ if(i<0 || i>=NCOL) continue;
     const t = b===a ? 1 : (i-i0)/(i1-i0); const r = Math.round(r0 + (r1-r0)*t);
     if(remove){ if(p.n < (rows[i]+1)*G.dx + 0.05) rows[i] = Math.min(rows[i], Math.max(0, Math.floor((p.n-G.sand_n_bottom)/G.dx)+1)); }
-    else rows[i] = Math.min(60, r); }
+    else {
+      // drawing is capped to what the simulations cover: the thickest column and
+      // the largest particle count in the training set
+      const R = M.training_range, cap = Math.round(R.thickness_max_m/G.dx);
+      let want = Math.min(cap, r);
+      const others = rows.reduce((a,b)=>a+b,0) - rows[i];
+      if(others + want > R.particles[1]){ want = Math.max(rows[i], R.particles[1] - others); capHit = true; }
+      if(r > cap) capHit = true;
+      rows[i] = want;
+    } }
   last = {i:i1, r:r1};
 }
+let capHit = false;
 function paintTarget(p){
   if(!tz){ tz = new Float64Array(M.n_out).fill(NaN); }
   if(win){ win = null; truthInfo = null; set("truth", ""); }
@@ -678,6 +719,7 @@ document.getElementById("fromfwd").addEventListener("click", () => {
 document.getElementById("expsel").addEventListener("change", e => { if(e.target.value){ setTheta(+e.target.value); loadExperiment(e.target.value); } });
 document.getElementById("solve").addEventListener("click", solve);
 document.getElementById("lock").addEventListener("change", () => { if(solSel>=0) clearSols(); });
+["lockf", "frontv", "lockr", "ratiov"].forEach(id => document.getElementById(id).addEventListener("change", () => { if(solSel>=0) clearSols(); }));
 
 function setMode(m){
   mode = m;
@@ -706,22 +748,27 @@ document.getElementById("m_inv").addEventListener("click", () => setMode("inv"))
 function fillFacts(){
   const s = M.skill;
   set("ntrain", s.n_train.toLocaleString("en"));
+  { const R = M.training_range;
+    set("rangefacts", `${R.particles[0]}&ndash;${R.particles[1].toLocaleString("en")} particles, up to ${Math.round(R.thickness_max_m*100)}&nbsp;cm thick,
+      front ${(-R.s_front[1]).toFixed(2)}&ndash;${(-R.s_front[0]).toFixed(2)}&nbsp;m up the slope`); }
   set("trainfacts", `${s.n_train} simulations: random shapes from five families (rectangle, wedge, triangle,
     mound, random polyline) at slope angles drawn uniformly from 30&ndash;60&deg; &mdash; half of the later ones
     chosen where an earlier ensemble disagreed most &mdash; plus rectangular blocks
     from the volume&ndash;slope study. Every run uses LS-DYNA SPH with the archived calibrated solver,
     1&nbsp;cm particles, and is run until the mass settles. Model: ${s.members} multilayer perceptrons
     (${s.hidden.join("&ndash;")} tanh units) predicting ${s.n_pca} principal components of the deposit surface.`);
-  const rowsT = [
-    ["Deposit surface error (mean over test shapes)", `${s.profile_rmse_cm.mlp_ensemble.toFixed(2)} cm`],
-    ["&hellip; 90th percentile", `${s.profile_rmse_cm.mlp_ensemble_p90.toFixed(2)} cm`],
-    ["Runout front position, mean abs. error", `${s.front_mae_cm.toFixed(1)} cm`],
-    ["Maximum deposit height, mean abs. error", `${s.hmax_mae_cm.toFixed(1)} cm`],
-    ["Baseline: 5-nearest-neighbour lookup", `${s.profile_rmse_cm.knn5.toFixed(2)} cm`],
-    ["Baseline: linear (ridge) regression", `${s.profile_rmse_cm.ridge.toFixed(2)} cm`],
-  ];
-  document.getElementById("skilltab").innerHTML = `<tr><th>Held-out test (${s.n_test} shapes)</th><th></th></tr>` +
-    rowsT.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("");
+  // one column per held-out set when the model reports them separately
+  const sets = s.by_test_set ? Object.entries(s.by_test_set) : [["all", {n: s.n_test, profile_rmse_cm: s.profile_rmse_cm.mlp_ensemble,
+    profile_rmse_p90_cm: s.profile_rmse_cm.mlp_ensemble_p90, front_mae_cm: s.front_mae_cm, hmax_mae_cm: s.hmax_mae_cm}]];
+  const label = {original: "Original range", extended: "Extended range", all: "Held-out test"};
+  const cell = f => sets.map(([k,v]) => `<td>${f(v)}</td>`).join("");
+  document.getElementById("skilltab").innerHTML =
+    `<tr><th></th>${sets.map(([k,v]) => `<th>${label[k]||k} (${v.n} shapes)</th>`).join("")}</tr>` +
+    `<tr><td>Deposit surface error, mean</td>${cell(v => v.profile_rmse_cm.toFixed(2)+" cm")}</tr>` +
+    `<tr><td>&hellip; 90th percentile</td>${cell(v => v.profile_rmse_p90_cm.toFixed(2)+" cm")}</tr>` +
+    `<tr><td>Runout front position, mean abs. error</td>${cell(v => v.front_mae_cm.toFixed(1)+" cm")}</tr>` +
+    `<tr><td>Maximum deposit height, mean abs. error</td>${cell(v => v.hmax_mae_cm.toFixed(1)+" cm")}</tr>` +
+    `<tr><td>Baselines, all test shapes: 5-nearest-neighbour / ridge</td><td colspan="${sets.length}">${s.profile_rmse_cm.knn5.toFixed(2)} / ${s.profile_rmse_cm.ridge.toFixed(2)} cm</td></tr>`;
   const sel = document.getElementById("expsel");
   Object.keys(M.experiments).forEach(a => { const o = document.createElement("option"); o.value = a; o.innerHTML = `Experiment, ${a}&deg; slope`; sel.appendChild(o); });
 }
@@ -767,6 +814,9 @@ async function selftest(){
   if(q.get("exp") && M.experiments[q.get("exp")]){
     setTheta(+q.get("exp")); document.getElementById("expsel").value = q.get("exp"); loadExperiment(q.get("exp"));
     if(q.has("lock")) document.getElementById("lock").checked = true;
+    if(q.has("free")){ ["lockf","lockr"].forEach(id => document.getElementById(id).checked = false); }
+    if(q.has("lockfront")){ document.getElementById("lockf").checked = true;
+      if(q.get("lockfront")) document.getElementById("frontv").value = q.get("lockfront"); }
     if(q.has("solve")) await solve();
   }
   if(q.has("selftest")) await selftest();
